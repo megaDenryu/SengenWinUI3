@@ -1,0 +1,10 @@
+<Project>
+  <!-- 全プロジェクトに共通の設定。設定の理由は ONE.O.NET の .claude/規約/コード/csharp_coding_rules.md 第1条にある -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>preview</LangVersion>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

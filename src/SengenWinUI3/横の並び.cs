@@ -7,5 +7,5 @@ namespace SengenWinUI3;
 public static class 横の並び
 {
     /// <summary>部品を左から順に、間を空けて並べる。</summary>
-    public static StackPanel From部品(params UIElement[] 部品List) => 並びの組み立て.部品を足す(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 }, 部品List);
+    public static StackPanel From部品(params UIElement[] 部品List) => new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 }.部品を足す(部品List);
 }

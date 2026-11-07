@@ -13,7 +13,8 @@ public abstract class Node : IChildOwner
 
     internal abstract WinUI.FrameworkElement Element { get; }
 
-    internal bool IsDestroyed { get; private set; }
+    /// <summary>後片付けを始めた後は true。利用する側は、UI スレッドへ送った反映の前にもこの値を調べられる。</summary>
+    public bool IsDestroyed { get; private set; }
 
     /// <summary>今の親から外す。購読は残すので、別の親へ入れ直せる。親が無ければ何もしない。</summary>
     public void Detach()
@@ -55,10 +56,6 @@ public abstract class Node : IChildOwner
 
     // 子が自分から離れられるか。外せない子を持つ部品は、状態を変える前に例外を投げるよう上書きする。
     internal virtual void ThrowIfChildCannotLeave(Node child) { }
-
-    // 子の本物を、自分の本物のどこから外すか。子を登録する部品は必ず上書きする。
-    internal virtual void RemoveChildElement(Node child) =>
-        throw new InvalidOperationException($"{GetType().Name} は子の本物を外す方法を持たない");
 
     // 自分の本物を持ち主の本物へ入れてから、持ち主を覚える。入れるのに失敗したら覚えない。
     internal void BecomeChildOf(IChildOwner owner, Action 本物へ入れる)
@@ -112,14 +109,6 @@ public abstract class Node : IChildOwner
     // 1回だけの配線を外したとき(付けた Flyout だけを破棄したとき)に印を戻し、また配線できるようにする。破棄の途中からも呼ばれる。
     internal void UnmarkWired(string eventName) => 受けた出来事.Unmark(eventName);
 
-    // 出来事を受ける入口。2回目は例外にし、購読を解く処理を後片付けの台帳へ入れる。処理の先頭で破棄済みなら何もしないことは、呼び出し側の処理が書く。
-    internal void WireEvent(string eventName, Action subscribe, Action unsubscribe)
-    {
-        MarkWiredOnce(eventName);
-        subscribe();
-        後片付けの台帳.Add(new CallOnDispose(unsubscribe));
-    }
-
     void IChildOwner.AdoptChild(Node child, Action 本物へ入れる) => AdoptChild(child, 本物へ入れる);
 
     void IChildOwner.ThrowIfCannotRelease(Node child) => ThrowIfChildCannotLeave(child);
@@ -127,7 +116,18 @@ public abstract class Node : IChildOwner
     void IChildOwner.ReleaseChild(Node child)
     {
         親子関係.RemoveChild(child); // 注意: 本物から外すのが例外を投げても、破棄した子が子List に残って2回破棄されないよう、先に外す
-        RemoveChildElement(child);
+        if (this is IHasChildren 子を持つ部品)
+        {
+            子を持つ部品.RemoveChildElement(child);
+        }
+        else if (this is IContentOwner 中身を持つ部品)
+        {
+            中身を持つ部品.RemoveChildElement(child);
+        }
+        else
+        {
+            throw new InvalidOperationException($"{GetType().Name} は外せる子を持たない");
+        }
     }
 
     private void 内側を破棄する(CollectedExceptions 起きた例外)

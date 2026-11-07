@@ -13,7 +13,7 @@ internal sealed class SceneRun(WinUI.Window ウインドウ, Action<string> 結�
     private Action[] 手順List = [];
     private int 次の手順の位置;
 
-    // トースト置き場を付けるなど、場面がウインドウそのものに触るときに使う。
+    // 場面が根を置き換えるなど、ウインドウそのものに触るときに使う。
     internal WinUI.Window Window => ウインドウ;
 
     internal void Report(string 文) => 結果を書く(文);

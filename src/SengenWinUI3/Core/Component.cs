@@ -5,6 +5,7 @@ namespace SengenWinUI3;
 /// <summary>
 /// ほかの部品を組み合わせて1つの単位にした部品の基底。派生は <c>sealed</c> にし、<see cref="Build"/> で中身の木を返す。
 /// 自分では WinUI の部品を増やさず、親の木へ入るのは <see cref="Build"/> が返した根の本物である。当てた <see cref="Style"/> は根へ渡す。
+/// 派生のコンストラクタでは、Style や OnLoaded など本物を読む操作を自分へ呼ばない。その場で Build が走るためである。Own は本物を読まないので呼べる。
 /// </summary>
 public abstract class Component : Node
 {

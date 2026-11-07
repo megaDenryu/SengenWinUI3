@@ -4,7 +4,7 @@ namespace SengenWinUI3;
 /// 画面の木へ入れられず、ほかの部品に付けて出す部品(ポップアップなど)の基底。付けた先の部品の破棄で一緒に破棄される。
 /// 付けずに作った浮かぶ部品は、利用する側が <see cref="Destroy"/> するか、Node の Own チェーンで預ける。
 /// </summary>
-public abstract class FloatingNode : IChildOwner
+public abstract class FloatingNode : IContentOwner
 {
     private Action? 付けた先から外す; // 付けたときだけある
 
@@ -71,4 +71,6 @@ public abstract class FloatingNode : IChildOwner
     }
 
     void IChildOwner.ReleaseChild(Node child) => ReleaseContent(child);
+
+    void IContentOwner.RemoveChildElement(Node child) => ReleaseContent(child);
 }

@@ -3,8 +3,13 @@ using WinUI = Microsoft.UI.Xaml;
 namespace SengenWinUI3;
 
 /// <summary>押せるボタン。文字か、中身の部品を見せる。作る関数は <see cref="UI.Button(string, Style?)"/> と <see cref="UI.Button(Node, Style?)"/>。</summary>
-public sealed class Button : Node, IClickable, IControlNode
+public sealed class Button : Node, IClickable, IControlNode, IContentOwner
 {
+    private static readonly EventBinding<WinUI.Controls.Button, WinUI.RoutedEventHandler, EventArgs> 押された出来事 = new(
+        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, ハンドラ) => 本物.Click += ハンドラ,
+        static (本物, ハンドラ) => 本物.Click -= ハンドラ);
+
     private readonly WinUI.Controls.Button 本物 = new();
     private readonly ContentSlot 中身置き場;
 
@@ -27,15 +32,7 @@ public sealed class Button : Node, IClickable, IControlNode
     }
 
     /// <summary>押されたときに処理を呼ぶ。2回目は例外を投げる。</summary>
-    public Button OnClick(Action handler)
-    {
-        WinUI.RoutedEventHandler 出来事が起きたら呼ぶ = (_, _) =>
-        {
-            if (!IsDestroyed) handler();
-        };
-        WireEvent(nameof(OnClick), () => 本物.Click += 出来事が起きたら呼ぶ, () => 本物.Click -= 出来事が起きたら呼ぶ);
-        return this;
-    }
+    public Button OnClick(Action handler) => this.WireEvent(nameof(OnClick), 本物, 押された出来事, handler);
 
     void IClickable.AttachFlyout(Flyout flyout) => 本物.Flyout = flyout.Element;
 
@@ -43,5 +40,5 @@ public sealed class Button : Node, IClickable, IControlNode
 
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    internal override void RemoveChildElement(Node child) => 中身置き場.Release(child);
+    void IContentOwner.RemoveChildElement(Node child) => 中身置き場.Release(child);
 }

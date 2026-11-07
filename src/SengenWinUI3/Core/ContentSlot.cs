@@ -4,7 +4,7 @@ namespace SengenWinUI3;
 
 // 中身を1つ持つ部品(ScrollViewer・Button・Border・浮かぶ部品・ウインドウ)の中身置き場。状態は今の中身の部品1つだけである。
 // 中身の本物を持ち主の本物へ置いてから登録し、置くのに失敗したら登録しない。入れ替えるときは、新しい中身を置いた後に前の中身を破棄する。
-internal sealed class ContentSlot(IChildOwner 持ち主, Action<WinUI.UIElement?> 本物へ置く)
+internal sealed class ContentSlot(IContentOwner 持ち主, Action<WinUI.UIElement?> 本物へ置く)
 {
     private Node? 中身;
 

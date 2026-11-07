@@ -22,5 +22,5 @@ public sealed class StackPanel : Node, IHasChildren
 
     internal override void ApplyStyle(Style style) => 当て方.Apply(style, 本物, this);
 
-    internal override void RemoveChildElement(Node child) => _ = 本物.Children.Remove(child.Element);
+    void IHasChildren.RemoveChildElement(Node child) => _ = 本物.Children.Remove(child.Element);
 }

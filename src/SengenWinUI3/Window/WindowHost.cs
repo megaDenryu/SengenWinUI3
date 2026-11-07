@@ -4,7 +4,7 @@ namespace SengenWinUI3;
 
 // ウインドウの根の寿命を管理する。
 // 根は持ち主を持つ部品として扱われるので、ほかの親へ入れると例外になる。ウインドウが閉じたら根を破棄する。
-internal sealed class WindowHost : IChildOwner
+internal sealed class WindowHost : IContentOwner
 {
     private readonly ContentSlot 根置き場;
 
@@ -20,6 +20,8 @@ internal sealed class WindowHost : IChildOwner
     void IChildOwner.AdoptChild(Node child, Action 本物へ入れる) => child.BecomeChildOf(this, 本物へ入れる);
 
     void IChildOwner.ReleaseChild(Node child) => 根置き場.Release(child);
+
+    void IContentOwner.RemoveChildElement(Node child) => 根置き場.Release(child);
 
     private void 閉じたら後片付けをする(object sender, WinUI.WindowEventArgs 出来事) => 根置き場.DestroyContent();
 }

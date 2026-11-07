@@ -1,13 +1,13 @@
 namespace SengenWinUI3;
 
-// 部品の破棄で一緒に解くもの(セルの購読・出来事の購読・一緒に破棄する部品)の台帳。
+// 部品の破棄で一緒に解くもの(出来事の購読・一緒に破棄する部品)の台帳。
 internal sealed class CleanupList
 {
     private List<IDisposable>? 後片付けの対象List;
 
     internal void Add(IDisposable 後片付けの対象) => (後片付けの対象List ??= []).Add(後片付けの対象);
 
-    // 返した値を Dispose すると、部品の破棄を待たずに解き、台帳からも外す。使い回す行が項目ごとに結び直しても、台帳が伸び続けないためである。
+    // 返した値を Dispose すると、部品の破棄を待たずに解き、台帳からも外す。浮かぶ部品だけを先に破棄したとき、付けた先の台帳に残さないためである。
     internal IDisposable AddRemovable(IDisposable 後片付けの対象)
     {
         Add(後片付けの対象);

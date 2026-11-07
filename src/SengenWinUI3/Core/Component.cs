@@ -9,7 +9,6 @@ namespace SengenWinUI3;
 public abstract class Component : Node
 {
     private readonly Lazy<Node> 根;
-    private List<Action>? 見張りを解く関数List;
 
     /// <summary>根はここでは作らず、初めて本物が要ったときに作る。</summary>
     protected Component()
@@ -21,34 +20,6 @@ public abstract class Component : Node
 
     /// <summary>中身の木を返す。初めて本物が要ったとき(親の木へ入れるとき)に1回だけ呼ばれる。</summary>
     protected abstract Node Build();
-
-    /// <summary>自分で作ったタイマーや購読を預け、この部品の破棄で一緒に Dispose する。</summary>
-    protected void Own(IDisposable resource) => OwnDisposable(resource);
-
-    /// <summary>木に入れていないフィールドの部品を預け、この部品の破棄で一緒に破棄する。</summary>
-    protected void Own(Node detachedNode) => OwnDisposable(new CallOnDispose(detachedNode.Destroy));
-
-    /// <summary>
-    /// 結ぶセルを替えられるセルの見張りを作る。<see cref="CellWatcher{TValue}.Watch"/> で結んだ時に1回、セルの値が変わるたびに <paramref name="apply"/> を UI スレッドで呼ぶ。
-    /// コンストラクタで呼んでフィールドに持つ。使い回す行は <c>Show</c> で Watch し、<see cref="VirtualList{TItem, TRow}"/> が行を項目から離す前に全部の見張りを解く。この部品の破棄でも解ける。
-    /// </summary>
-    protected CellWatcher<TValue> WatchCell<TValue>(Action<TValue> apply)
-    {
-        ThrowIfDestroyed();
-        CellWatcher<TValue> 見張り = new(this, apply);
-        OwnDisposable(new CallOnDispose(見張り.Unwatch));
-        (見張りを解く関数List ??= []).Add(見張り.Unwatch);
-        return 見張り;
-    }
-
-    // 使い回す行を項目から離すときに、一覧が呼ぶ。
-    internal void UnwatchAllCells()
-    {
-        foreach (Action 見張りを解く in 見張りを解く関数List ?? [])
-        {
-            見張りを解く();
-        }
-    }
 
     internal sealed override void ApplyStyle(Style style) => 根.Value.ApplyStyle(style);
 

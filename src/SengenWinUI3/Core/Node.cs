@@ -1,4 +1,3 @@
-using SengenWinUI3.State;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
@@ -91,21 +90,17 @@ public abstract class Node : IChildOwner
         起きた例外.ThrowIfAny();
     }
 
-    internal void OwnDisposable(IDisposable resource) => _ = OwnRemovable(resource);
+    internal void OwnDisposable(IDisposable resource)
+    {
+        ThrowIfDestroyed();
+        後片付けの台帳.Add(resource);
+    }
 
     // 返した値を Dispose すると先に解ける。Dispose しなくても部品の破棄で解ける。
     internal IDisposable OwnRemovable(IDisposable resource)
     {
         ThrowIfDestroyed();
         return 後片付けの台帳.AddRemovable(resource);
-    }
-
-    internal IDisposable SubscribeCell<TValue>(IReadOnlyCell<TValue> cell, Action<TValue> apply)
-    {
-        ThrowIfDestroyed();
-        CellWatcher<TValue> 見張り = new(this, apply);
-        見張り.Watch(cell);
-        return 後片付けの台帳.AddRemovable(new CallOnDispose(見張り.Unwatch));
     }
 
     internal void MarkWiredOnce(string eventName)

@@ -1,4 +1,3 @@
-using SengenWinUI3.State;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
@@ -18,13 +17,6 @@ public static class NodeExtensions
     public static T Tap<T>(this T node, Action<T> action) where T : Node
     {
         action(node);
-        return node;
-    }
-
-    /// <summary>セルを結ぶ。結んだ時に1回、セルの値が変わるたびに、部品と値を渡して <paramref name="apply"/> を呼ぶ。購読は部品の破棄で解く。</summary>
-    public static T Bind<T, TValue>(this T node, IReadOnlyCell<TValue> cell, Action<T, TValue> apply) where T : Node
-    {
-        node.SubscribeCell(cell, 値 => apply(node, 値));
         return node;
     }
 

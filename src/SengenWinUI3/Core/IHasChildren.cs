@@ -1,9 +1,9 @@
-using WinUI = Microsoft.UI.Xaml;
-
 namespace SengenWinUI3;
 
-/// <summary>子を何個でも持てる部品の目印。本物が Panel の部品だけが実装し、SengenWinUI3 の外からは実装できない。</summary>
+/// <summary>子を何個でも持てる部品の目印。子の本物を入れる方法は部品ごとに持ち、外からは実装できない。</summary>
 public interface IHasChildren
 {
-    internal WinUI.Controls.Panel ChildPanel { get; }
+    internal int ChildCount { get; }
+    internal void InsertChildElement(int index, Node child);
+    internal void ClearChildElements();
 }

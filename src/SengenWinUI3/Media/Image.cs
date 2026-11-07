@@ -1,4 +1,3 @@
-using SengenWinUI3.State;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
@@ -10,21 +9,19 @@ public sealed class Image : Node
 
     private readonly WinUI.Controls.Image 本物 = new();
     private readonly ImageDecodeSize 読み込む大きさ;
-    private readonly BindableValue<Image, Uri> 出どころ;
+    private readonly ElementValue<Image, Uri> 出どころ;
 
     internal Image(Uri source, ImageDecodeSize decodeSize) : this(decodeSize) => 出どころ.Set(source);
-
-    internal Image(IReadOnlyCell<Uri> source, ImageDecodeSize decodeSize) : this(decodeSize) => 出どころ.Bind(source);
 
     private Image(ImageDecodeSize decodeSize)
     {
         読み込む大きさ = decodeSize;
-        出どころ = new(this, this, static (部品, 見せる出どころ) => 部品.見せている出どころか(見せる出どころ), static (部品, 見せる出どころ) => 部品.Set出どころ(見せる出どころ));
+        出どころ = new(this, static (部品, 見せる出どころ) => 部品.見せている出どころか(見せる出どころ), static (部品, 見せる出どころ) => 部品.Set出どころ(見せる出どころ));
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
 
-    /// <summary>見せる画像の出どころを替える。セルに結んだ Image へ呼ぶと、値の出どころが2つになるので例外を投げる。</summary>
+    /// <summary>見せる画像の出どころを替える。本物の今の出どころと等しい場合は設定しない。</summary>
     public Image SetSource(Uri source)
     {
         ThrowIfDestroyed();

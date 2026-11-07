@@ -9,7 +9,7 @@ internal abstract class Scene : Component
     protected Scene(SceneRun 場面の進め方)
     {
         Run = 場面の進め方;
-        Own(場面の進め方.ReportOnDispose($"{GetType().Name} の根を破棄した"));
+        this.Own(場面の進め方.ReportOnDispose($"{GetType().Name} の根を破棄した"));
     }
 
     protected SceneRun Run { get; }

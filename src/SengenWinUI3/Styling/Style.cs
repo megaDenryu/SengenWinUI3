@@ -12,6 +12,9 @@ public sealed class Style
     private WinUI.Media.Brush? 背景のブラシ;
     private WinUI.Media.Brush? 文字のブラシ;
     private WinUI.Media.Brush? 枠線のブラシ;
+    private WinUI.Media.Brush? 図形のブラシ;
+    private WinUI.Media.Brush? 輪郭のブラシ;
+    private WinUI.Media.FontFamily? フォント;
 
     /// <summary>幅。</summary>
     public Px? Width { get; init; }
@@ -57,6 +60,22 @@ public sealed class Style
     public bool? IsTextSelectionEnabled { get; init; }
     /// <summary>不透明度。</summary>
     public Ratio? Opacity { get; init; }
+    /// <summary>Grid の行の間隔。</summary>
+    public Px? RowSpacing { get; init; }
+    /// <summary>Grid の列の間隔。</summary>
+    public Px? ColumnSpacing { get; init; }
+    /// <summary>Control の中身の横の寄せ方。</summary>
+    public HorizontalAlignment? HorizontalContentAlignment { get; init; }
+    /// <summary>Control の中身の縦の寄せ方。</summary>
+    public VerticalAlignment? VerticalContentAlignment { get; init; }
+    /// <summary>フォント名か、フォントのリソースを指定する文字列。</summary>
+    public string? FontFamily { get; init; }
+    /// <summary>図形の内側の塗り。</summary>
+    public Brush? Fill { get; init; }
+    /// <summary>図形の輪郭の塗り。</summary>
+    public Brush? Stroke { get; init; }
+    /// <summary>図形の輪郭の太さ。</summary>
+    public Px? StrokeThickness { get; init; }
 
     /// <summary>この Style に、<paramref name="overlay"/> の null でない項目を上書きした新しい Style を返す。</summary>
     public Style With(Style overlay) => new()
@@ -83,6 +102,14 @@ public sealed class Style
         TextWrapping = overlay.TextWrapping ?? TextWrapping,
         IsTextSelectionEnabled = overlay.IsTextSelectionEnabled ?? IsTextSelectionEnabled,
         Opacity = overlay.Opacity ?? Opacity,
+        RowSpacing = overlay.RowSpacing ?? RowSpacing,
+        ColumnSpacing = overlay.ColumnSpacing ?? ColumnSpacing,
+        HorizontalContentAlignment = overlay.HorizontalContentAlignment ?? HorizontalContentAlignment,
+        VerticalContentAlignment = overlay.VerticalContentAlignment ?? VerticalContentAlignment,
+        FontFamily = overlay.FontFamily ?? FontFamily,
+        Fill = overlay.Fill ?? Fill,
+        Stroke = overlay.Stroke ?? Stroke,
+        StrokeThickness = overlay.StrokeThickness ?? StrokeThickness,
     };
 
     internal WinUI.Media.Brush? CachedBackground() => Background is { } 塗り ? 背景のブラシ ??= 塗り.ToWinUI() : null;
@@ -90,6 +117,12 @@ public sealed class Style
     internal WinUI.Media.Brush? CachedForeground() => Foreground is { } 塗り ? 文字のブラシ ??= 塗り.ToWinUI() : null;
 
     internal WinUI.Media.Brush? CachedBorderBrush() => BorderBrush is { } 塗り ? 枠線のブラシ ??= 塗り.ToWinUI() : null;
+
+    internal WinUI.Media.Brush? CachedFill() => Fill is { } 塗り ? 図形のブラシ ??= 塗り.ToWinUI() : null;
+
+    internal WinUI.Media.Brush? CachedStroke() => Stroke is { } 塗り ? 輪郭のブラシ ??= 塗り.ToWinUI() : null;
+
+    internal WinUI.Media.FontFamily? CachedFontFamily() => FontFamily is { } 名前 ? フォント ??= new WinUI.Media.FontFamily(名前) : null;
 
     internal void ThrowIfUnsupported(StyleItems 持つ項目, Node 部品)
     {
@@ -123,5 +156,13 @@ public sealed class Style
         | (FontSize is null ? StyleItems.None : StyleItems.FontSize)
         | (FontWeight is null ? StyleItems.None : StyleItems.FontWeight)
         | (TextWrapping is null ? StyleItems.None : StyleItems.TextWrapping)
-        | (IsTextSelectionEnabled is null ? StyleItems.None : StyleItems.IsTextSelectionEnabled);
+        | (IsTextSelectionEnabled is null ? StyleItems.None : StyleItems.IsTextSelectionEnabled)
+        | (RowSpacing is null ? StyleItems.None : StyleItems.RowSpacing)
+        | (ColumnSpacing is null ? StyleItems.None : StyleItems.ColumnSpacing)
+        | (HorizontalContentAlignment is null ? StyleItems.None : StyleItems.HorizontalContentAlignment)
+        | (VerticalContentAlignment is null ? StyleItems.None : StyleItems.VerticalContentAlignment)
+        | (FontFamily is null ? StyleItems.None : StyleItems.FontFamily)
+        | (Fill is null ? StyleItems.None : StyleItems.Fill)
+        | (Stroke is null ? StyleItems.None : StyleItems.Stroke)
+        | (StrokeThickness is null ? StyleItems.None : StyleItems.StrokeThickness);
 }

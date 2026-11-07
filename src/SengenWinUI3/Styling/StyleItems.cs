@@ -27,4 +27,12 @@ internal enum StyleItems
     FontWeight = 1 << 19,
     TextWrapping = 1 << 20,
     IsTextSelectionEnabled = 1 << 21,
+    RowSpacing = 1 << 22,
+    ColumnSpacing = 1 << 23,
+    HorizontalContentAlignment = 1 << 24,
+    VerticalContentAlignment = 1 << 25,
+    FontFamily = 1 << 26,
+    Fill = 1 << 27,
+    Stroke = 1 << 28,
+    StrokeThickness = 1 << 29,
 }

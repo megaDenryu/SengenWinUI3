@@ -1,58 +1,100 @@
 # SengenWinUI3
 
-WinUI 3 の部品を、C# のコードで構築・配線・更新するための部品のライブラリである。XAML で部品の木を書かず、データバインディングも使わない。利用する側は、部品の木を C# の式で組み(構築)、操作と処理をつなぎ(配線)、表示を変えるときは更新の操作を明示的に呼ぶ(更新)。
+SengenWinUI3 は、WinUI 3 の部品を C# の式で構築・配線・更新するための薄いライブラリである。利用する側は部品の木を組み、出来事を処理へつなぎ、`Set〜` を呼んで表示を更新する。
 
-同じ考え方のライブラリに、TypeScript(DOM)版の SengenUI と、Rust(egui)版の [SengenEgui](https://github.com/megaDenryu/SengenEgui) がある。
+核は部品の型と作る関数・型を保つチェーン・`Style`・値の型・親子と破棄を持つ。値の入れ物・購読と結ぶ仕組み・UI スレッドへ送る仕組み・実行中の条件表示・トースト・ウインドウごとの状態は、利用する側が自分で書く。
 
-## 状態
-
-このライブラリは、WinUI 3 の部品の薄い包みとして一般に必要な関数と型を、利用する側(OneOnet のネイティブ版 [ONE.O.NET](https://github.com/megaDenryu/ONE.O.NET))から逆算せずにそろえる。それより後に足りないと分かったものは、利用する側で使われた形から足す。
-
-| 部品 | 作るもの |
-|---|---|
-| `文章.From文字(文字)` | 画面の幅で折り返し、利用者が選んで写せる文章(`TextBlock`) |
-| `見出し.From文字(文字)` | 画面の名前を示す見出し(`TextBlock`) |
-| `小見出し.From文字(文字)` | 画面の中の1つのまとまりの頭に置く、見出しより1段小さい見出し(`TextBlock`) |
-| `横の並び.From部品(部品…)` | ボタンの組のように、1行に横へ並べる並び(`StackPanel`) |
-| `縦の並び.From部品(部品…)` | 入力の欄や文章のまとまりを、上から下へ並べる並び(`StackPanel`) |
-| `縦にスクロールする画面.From部品(部品…)` | 部品を縦に並べて読みやすい幅で左に寄せ、収まらない分をスクロールで見せる画面(`ScrollViewer`) |
+同じ考え方のライブラリに TypeScript(DOM)版の SengenUI と、Rust(egui)版の [SengenEgui](https://github.com/megaDenryu/SengenEgui) がある。
 
 ## 使い方
 
-部品は WinUI 3 の部品をそのまま返す。返した部品の設定を後から変えてもよく、WinUI 3 の部品と入れ子にしてもよい。
+利用する側は、`using SengenWinUI3;` と `using static SengenWinUI3.UI;` で型と作る関数を取り込む。関数は自前の型で部品を返し、本物の WinUI の部品は公開しない。すべての公開の操作は UI スレッドで呼ぶ。
 
 ```csharp
 using SengenWinUI3;
+using static SengenWinUI3.UI;
 
-var 画面 = 縦にスクロールする画面.From部品(
-    見出し.From文字("キャラクターを直す"),
-    文章.From文字("保存するまでファイルに書かない。"),
-    横の並び.From部品(保存のボタン, やめるボタン));
+sealed class EditScreen : Component
+{
+    private static readonly Style 画面の見た目 = new()
+    {
+        Padding = new Thickness(16.Px),
+        Spacing = 12.Px,
+    };
+    private readonly TextBlock 結果 = TextBlock("保存前");
+
+    protected override Node Build() => StackPanel(画面の見た目).Children(
+        TextBlock("キャラクターを編集する"),
+        結果,
+        Button("保存").OnClick(保存する));
+
+    private void 保存する() => 結果.SetText("保存した");
+}
 ```
 
-部品の並びを条件で変えるときは、配列の式で組む。WinUI 3 の解析器(CsWinRT1032)は、`IEnumerable` へ渡す集まりの式を止めるため、並びの部品は配列を受け取る。
+アプリの `Window` を持つファイルでは、`window.SetContent(new EditScreen())` で根を置く。2回目の `SetContent` では前の根を破棄し、ウインドウが閉じたときも根を破棄する。
 
-```csharp
-縦にスクロールする画面.From部品([見出し.From文字("最初のキャラクターを作る"), .. 足りないものの部品List]);
-```
+## 部品と更新
+
+| 実装済みの部品 | 作る関数と主な操作 |
+|---|---|
+| `StackPanel` | `StackPanel(style)`・`Children(...)`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `TextBlock` | `TextBlock(text, style)`・`SetText` |
+| `Button` | `Button(text, style)` または `Button(content, style)`・`OnClick`・`SetContent` |
+| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource` |
+| `ScrollViewer` | `ScrollViewer(content, style)`・`SetContent`・`ScrollToEnd`・`StickToEnd` |
+| `VirtualList<TItem, TRow>` | `VirtualList<TItem, TRow>(createRow, style)`・`SetItems`・`ReplaceItem` など |
+| `Flyout` | `Flyout(content)` を `button.Flyout(flyout)` で付ける |
+| `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |
+
+作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
+
+後の作業で `Grid`・`Border`・`Canvas`、入力と選択の部品、`ListView`、`Popup`・`MenuFlyout`・`ContentDialog`、`FontIcon`・`SymbolIcon`、図形・動きと影を足す。部品の範囲と契約は [設計文書](docs/設計.md) にある。
+
+## 見た目
+
+利用する側は `static readonly Style` に名前を付けて共有し、`With(new Style { ... })` で派生を作る。null の項目は当てず、部品が持たない項目を当てると例外になる。
+
+| 部品 | 共通の幅・高さ・最小最大・Margin・寄せ方・Opacity に追加できる項目 |
+|---|---|
+| `StackPanel` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・Orientation・Spacing |
+| `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled |
+| `Button`・`ScrollViewer` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `Image`・`VirtualList` | 共通の項目のみ |
+
+長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
+
+## 寿命と出来事
+
+`Detach()` は部品を今の親から外す。部品は資源を保持するので、利用する側は別の親へ入れ直せる。`Destroy()` は後片付けと子孫の破棄を行い、2回目は何もしない。破棄後の操作は例外になる。
+
+利用する側は `node.Own(resource)`・`node.Own(detachedNode)`・`node.Own(floatingNode)` で資源と部品を預ける。チェーンの戻り値は元の具象型を保つ。利用する側でも解く資源の Dispose は、2回呼んでも害の無い形にする。Component の派生の中では `this.Own(...)` と書く。
+
+`OnLoaded(Action)` と `OnUnloaded(Action)` は、読み込みと取り外しが起きるたびに処理を呼ぶ。同じ部品の同じ出来事への2回目の登録は例外になる。登録は部品の破棄で解く。利用する側は破棄時の後片付けを Own に預ける。
+
+入力と選択の部品を足す際は、`On〜Changed` は利用者が値を変えたときだけ呼び、プログラムからの `Set〜` では呼ばない。
+
+## 行の使い回しと見本
+
+件数に上限の無い一覧は `VirtualList` で書く。行は Component と `IRecyclableRow<TItem>` を実装し、`Show(item)` で子の Set〜 を呼ぶ。行の作者は、項目に結び付いた資源を `Release()` で解く。核は行の購読を持たない。
+
+VirtualList はスクロールを持たないので、利用する側は ScrollViewer の中に置く。ScrollViewer には高さの決まる配置が必要であり、StackPanel の中では高さが無限になって使い回しが効かない場合がある。
+
+`samples/Gallery/Scenes/VirtualListScene.cs` は、10000件の表示と項目の置き換えを示す。Gallery の場面の一覧は Scene の派生型を自動で列挙する。
 
 ## ビルド
 
-ビルドには、`global.json` で固定した .NET SDK(.NET 11 RC2)を導入する。
+ビルドには `global.json` で固定した .NET SDK を使う。
 
 ```powershell
 # 実行場所: リポジトリのルート
 dotnet build SengenWinUI3.sln --no-incremental
 ```
 
-## 設計
+## 設計と規約
 
-層・公開する型の契約・部品の範囲・性能の測定の結果は [docs/設計.md](docs/設計.md) にある。
-
-## 規約
-
-C# の規約は ONE.O.NET のものを使い、このリポジトリにはコピーを持たない。読む入口は `.claude/commands/rule.md` である。
+層・公開する型の契約・部品の範囲・性能の判断は [docs/設計.md](docs/設計.md) にある。C# の規約は ONE.O.NET のものを使い、読む入口は `.claude/commands/rule.md` である。
 
 ## ライセンス
 
-MIT License。[LICENSE](LICENSE) を見る。
+MIT License。[LICENSE](LICENSE) を参照する。

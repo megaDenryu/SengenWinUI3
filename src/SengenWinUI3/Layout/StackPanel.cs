@@ -14,7 +14,11 @@ public sealed class StackPanel : Node, IHasChildren
 
     internal override WinUI.FrameworkElement Element => 本物;
 
-    WinUI.Controls.Panel IHasChildren.ChildPanel => 本物;
+    int IHasChildren.ChildCount => 本物.Children.Count;
+
+    void IHasChildren.InsertChildElement(int index, Node child) => 本物.Children.Insert(index, child.Element);
+
+    void IHasChildren.ClearChildElements() => 本物.Children.Clear();
 
     internal override void ApplyStyle(Style style) => 当て方.Apply(style, 本物, this);
 

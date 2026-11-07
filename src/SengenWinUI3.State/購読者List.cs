@@ -2,43 +2,43 @@ namespace SengenWinUI3.State;
 
 // 購読者の配列は、購読と解除のたびに新しい配列へ差し替える。知らせる側は差し替える前の配列を読むので、
 // 知らせの途中の購読と解除と別のスレッドの通知で、走査中の配列が壊れない。
-internal sealed class 購読者の一覧<T>
+internal sealed class 購読者List<T>
 {
-    private readonly Lock 差し替えの排他 = new();
-    private Action<T>[] 購読者List = [];
+    private readonly Lock 差し替えのロック = new();
+    private Action<T>[] 登録済みList = [];
 
-    public IDisposable 加える(Action<T> 処理)
+    public IDisposable 加える(Action<T> 購読者)
     {
-        lock (差し替えの排他)
+        lock (差し替えのロック)
         {
-            購読者List = [.. 購読者List, 処理];
+            登録済みList = [.. 登録済みList, 購読者];
         }
-        return new 購読の解除<T>(this, 処理);
+        return new 購読を解く札<T>(this, 購読者);
     }
 
-    public void 外す(Action<T> 処理)
+    public void 外す(Action<T> 購読者)
     {
-        lock (差し替えの排他)
+        lock (差し替えのロック)
         {
-            int 位置 = 最初の位置を探す(処理);
+            int 位置 = 最初の位置を探す(購読者);
             if (位置 < 0)
             {
                 return;
             }
-            購読者List = [.. 購読者List[..位置], .. 購読者List[(位置 + 1)..]];
+            登録済みList = [.. 登録済みList[..位置], .. 登録済みList[(位置 + 1)..]];
         }
     }
 
     // 注意: 購読者が投げた例外で残りの購読者への知らせを止めないよう、全員へ知らせてからまとめて投げる。
     public void 知らせる(T 値)
     {
-        Action<T>[] 知らせる先List = Volatile.Read(ref 購読者List);
+        Action<T>[] 知らせる先List = Volatile.Read(ref 登録済みList);
         List<Exception>? 例外List = null;
-        foreach (Action<T> 処理 in 知らせる先List)
+        foreach (Action<T> 購読者 in 知らせる先List)
         {
             try
             {
-                処理(値);
+                購読者(値);
             }
             catch (Exception 例外)
             {
@@ -52,11 +52,11 @@ internal sealed class 購読者の一覧<T>
         }
     }
 
-    private int 最初の位置を探す(Action<T> 処理)
+    private int 最初の位置を探す(Action<T> 購読者)
     {
-        for (int 位置 = 0; 位置 < 購読者List.Length; 位置++)
+        for (int 位置 = 0; 位置 < 登録済みList.Length; 位置++)
         {
-            if (ReferenceEquals(購読者List[位置], 処理))
+            if (ReferenceEquals(登録済みList[位置], 購読者))
             {
                 return 位置;
             }

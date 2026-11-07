@@ -4,8 +4,8 @@ namespace SengenWinUI3.State;
 public sealed class DerivedCell<T> : IReadOnlyCell<T>, IDisposable
 {
     private readonly Func<T> 計算する式;
-    private readonly Cell<T> 結果;
-    private readonly Lock 計算の排他 = new();
+    private readonly Cell<T> 計算した値のセル;
+    private readonly Lock 計算のロック = new();
     private readonly IDisposable[] 元への購読List;
     private int 解除済み;
 
@@ -13,16 +13,16 @@ public sealed class DerivedCell<T> : IReadOnlyCell<T>, IDisposable
     public DerivedCell(Func<T> compute, params ICell[] sources)
     {
         計算する式 = compute;
-        結果 = new Cell<T>(compute());
+        計算した値のセル = new Cell<T>(compute());
         元への購読List = Array.ConvertAll(sources, 元のセル => 元のセル.Subscribe(再計算する));
         再計算する(); // 初めの計算と購読の間に元が変わっていても取りこぼさない
     }
 
-    public T Value => 結果.Value;
+    public T Value => 計算した値のセル.Value;
 
-    public IDisposable Subscribe(Action onChanged) => 結果.Subscribe(onChanged);
+    public IDisposable Subscribe(Action onChanged) => 計算した値のセル.Subscribe(onChanged);
 
-    public IDisposable Subscribe(Action<T> onChanged) => 結果.Subscribe(onChanged);
+    public IDisposable Subscribe(Action<T> onChanged) => 計算した値のセル.Subscribe(onChanged);
 
     /// <summary>元のセルへの購読を解く。2回呼んでも壊れない。</summary>
     public void Dispose()
@@ -37,17 +37,17 @@ public sealed class DerivedCell<T> : IReadOnlyCell<T>, IDisposable
         }
     }
 
-    // 注意: 計算と設定を排他で囲むのは、別のスレッドで古い元の値から出した結果が、新しい結果を上書きしないため。
-    // 結果への設定が購読者へ知らせるので、購読者が別のスレッドを待つ処理を書くと止まる。
+    // 注意: 計算と設定をロックで囲むのは、別のスレッドで古い元の値から出した値が、新しく計算した値を上書きしないため。
+    // 計算した値のセルへの設定が購読者へ知らせるので、購読者が別のスレッドを待つ処理を書くと止まる。
     private void 再計算する()
     {
         if (Volatile.Read(ref 解除済み) == 1)
         {
             return;
         }
-        lock (計算の排他)
+        lock (計算のロック)
         {
-            結果.Value = 計算する式();
+            計算した値のセル.Value = 計算する式();
         }
     }
 }

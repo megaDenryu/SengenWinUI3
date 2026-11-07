@@ -4,4 +4,6 @@ namespace SengenWinUI3;
 public interface IClickable
 {
     internal void AttachFlyout(Flyout flyout);
+
+    internal void DetachFlyout();
 }

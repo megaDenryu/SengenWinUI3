@@ -2,33 +2,30 @@ using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>中身を1つ持ち、収まらない分をスクロールで見せる部品。既定は WinUI 3 と同じく縦にスクロールする。作る関数は <see cref="UI.ScrollViewer(Style?)"/>。</summary>
+/// <summary>中身を1つ持ち、収まらない分をスクロールで見せる部品。既定は WinUI 3 と同じく縦にスクロールする。作る関数は <see cref="UI.ScrollViewer(Node, Style?)"/>。</summary>
 public sealed class ScrollViewer : Node, IControlNode
 {
     private const double 末尾とみなす残り = 1; // 拡大率による端数で、末尾にいても残りが 0 にならないことがある
 
     private readonly WinUI.Controls.ScrollViewer 本物 = new();
-    private bool 中身を持つか;
-    private bool 末尾に留まるか;
+    private readonly ContentSlot 中身の置き場;
     private bool 末尾にいるか = true;
 
-    internal ScrollViewer() { }
+    internal ScrollViewer(Node content)
+    {
+        中身の置き場 = new ContentSlot(this, 中身の本物 => 本物.Content = 中身の本物);
+        中身の置き場.SetContent(content);
+    }
 
     internal override WinUI.FrameworkElement Element => 本物;
 
     WinUI.Controls.Control IControlNode.Control => 本物;
 
-    /// <summary>中身を置く。中身を替えるときは、前の中身を Destroy か Detach してから置く。中身があるのに呼ぶと例外を投げる。</summary>
-    public ScrollViewer Content(Node content)
+    /// <summary>中身を入れ替える。前の中身は破棄する。親を持つ部品を渡すと例外を投げる。</summary>
+    public ScrollViewer SetContent(Node content)
     {
         ThrowIfDestroyed();
-        if (中身を持つか)
-        {
-            throw new InvalidOperationException("ScrollViewer はすでに中身を持つ。前の中身を Destroy か Detach してから置く");
-        }
-        AdoptChild(content);
-        本物.Content = content.Element;
-        中身を持つか = true;
+        中身の置き場.SetContent(content);
         return this;
     }
 
@@ -40,31 +37,37 @@ public sealed class ScrollViewer : Node, IControlNode
         _ = 本物.ChangeView(null, 本物.ScrollableHeight, null, true);
     }
 
-    /// <summary>末尾にいる間に中身が伸びたら、末尾へ付いていく。利用者が上へスクロールしている間は付いていかない。</summary>
+    /// <summary>末尾にいる間に中身が伸びたら、末尾へ付いていく。利用者が上へスクロールしている間は付いていかない。2回目は例外を投げる。</summary>
     public ScrollViewer StickToEnd()
     {
-        ThrowIfWiredTwice(ref 末尾に留まるか, nameof(StickToEnd));
-        本物.ViewChanged += (_, _) => 末尾にいるか = 本物.ScrollableHeight - 本物.VerticalOffset <= 末尾とみなす残り;
-        _ = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, (_, _) => 伸びたら末尾へ付いていく());
+        EventHandler<WinUI.Controls.ScrollViewerViewChangedEventArgs> 位置が変わったときの処理 = (_, _) =>
+        {
+            if (!IsDestroyed) 末尾にいるか = 本物.ScrollableHeight - 本物.VerticalOffset <= 末尾とみなす残り;
+        };
+        WinUI.DependencyPropertyChangedCallback 中身の高さが変わったときの処理 = (_, _) => 末尾へ付いていく();
+        long 高さの購読の札 = 0;
+        WireEvent(
+            nameof(StickToEnd),
+            () =>
+            {
+                本物.ViewChanged += 位置が変わったときの処理;
+                高さの購読の札 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 中身の高さが変わったときの処理);
+            },
+            () =>
+            {
+                本物.ViewChanged -= 位置が変わったときの処理;
+                本物.UnregisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 高さの購読の札);
+            });
         return this;
     }
 
-    internal override void ApplyStyle(Style style)
-    {
-        style.ThrowIfUnsupported(StyleItems.Layout | StyleItems.ControlLook, this);
-        style.ApplyLayout(本物);
-        style.ApplyControlLook(本物);
-    }
+    internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    internal override void RemoveChildElement(Node child)
-    {
-        本物.Content = null;
-        中身を持つか = false;
-    }
+    internal override void RemoveChildElement(Node child) => 中身の置き場.Release(child);
 
-    private void 伸びたら末尾へ付いていく()
+    private void 末尾へ付いていく()
     {
-        if (末尾にいるか)
+        if (!IsDestroyed && 末尾にいるか)
         {
             _ = 本物.ChangeView(null, 本物.ExtentHeight - 本物.ViewportHeight, null, true);
         }

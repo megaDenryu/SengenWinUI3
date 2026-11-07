@@ -1,6 +1,6 @@
 namespace SengenWinUI3;
 
-// Style の項目のうち null でないものの集まり。部品の種類ごとに持つ項目と比べ、部品が持たない項目を当てたかを調べる。
+// Style の項目の印。部品が持つ項目の印は、部品が使う当て方(IStyleGroup)の印を合わせて作る。
 [Flags]
 internal enum StyleItems
 {
@@ -27,6 +27,4 @@ internal enum StyleItems
     FontWeight = 1 << 19,
     TextWrapping = 1 << 20,
     IsTextSelectionEnabled = 1 << 21,
-    Layout = Width | Height | MinWidth | MaxWidth | MinHeight | MaxHeight | Margin | HorizontalAlignment | VerticalAlignment | Opacity, // FrameworkElement が持つので、全部の葉が持つ
-    ControlLook = Padding | Background | Foreground | BorderBrush | BorderThickness | CornerRadius | FontSize | FontWeight, // Control が持つ
 }

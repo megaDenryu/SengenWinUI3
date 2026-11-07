@@ -2,6 +2,6 @@ namespace SengenWinUI3;
 
 public static partial class UI
 {
-    /// <summary>収まらない分をスクロールで見せる <see cref="SengenWinUI3.ScrollViewer"/> を作る。中身は <c>.Content(…)</c> で置く。</summary>
-    public static ScrollViewer ScrollViewer(Style? style = null) => StyleIfGiven(new ScrollViewer(), style);
+    /// <summary>中身の部品の収まらない分をスクロールで見せる <see cref="SengenWinUI3.ScrollViewer"/> を作る。親を持つ部品を渡すと例外を投げる。</summary>
+    public static ScrollViewer ScrollViewer(Node content, Style? style = null) => StyleIfGiven(new ScrollViewer(content), style);
 }

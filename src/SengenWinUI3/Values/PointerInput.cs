@@ -2,8 +2,11 @@ using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>マウス・ペン・指の出来事の中身。位置は出来事を受けた部品の左上からの長さである。</summary>
-public sealed class PointerInput
+/// <summary>
+/// マウス・ペン・指の出来事の中身。位置は出来事を受けた部品の左上からの長さである。
+/// 出来事のたびに割り当てないよう構造体にした。本物の点(WinUI の PointerPoint)は作るときに1回だけ読む。
+/// </summary>
+public readonly struct PointerInput
 {
     private readonly WinUI.Input.PointerRoutedEventArgs 元の出来事;
 

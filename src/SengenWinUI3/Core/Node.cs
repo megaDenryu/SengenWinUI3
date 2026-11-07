@@ -6,10 +6,9 @@ namespace SengenWinUI3;
 /// <summary>画面の木に入れられるものすべての基底。本物の WinUI の部品を1つ持ち、外へは見せない。外からは <see cref="Component"/> だけを継承できる。</summary>
 public abstract class Node : IChildOwner
 {
-    private IChildOwner? 持ち主;
-    private List<Node>? 子List;
-    private List<IDisposable>? 預かったList; // 購読の解除と、一緒に破棄するもの
-    private NodeEvents 受けた出来事;
+    private readonly NodeFamily 親と子 = new();
+    private readonly CleanupList 後片付けの対象List = new();
+    private readonly EventWiringMarks 受けた出来事 = new();
 
     private protected Node() { }
 
@@ -21,20 +20,23 @@ public abstract class Node : IChildOwner
     public void Detach()
     {
         ThrowIfDestroyed();
-        持ち主?.ReleaseChild(this);
-        持ち主 = null;
+        親と子.LeaveOwner(this);
     }
 
-    /// <summary>自分と子孫の購読を解き、自分の本物を親の本物から外す。2回目は何もしない。</summary>
+    /// <summary>
+    /// 自分と子孫の購読を解き、自分の本物を親の本物から外す。2回目は何もしない。
+    /// 途中で例外が起きても後片付けを全部済ませてから、起きた例外を <see cref="AggregateException"/> にまとめて投げる。
+    /// </summary>
     public void Destroy()
     {
         if (IsDestroyed)
         {
             return;
         }
-        持ち主?.ReleaseChild(this); // 注意: 外すときに自分の本物を読むので、破棄の印を付ける前に外す
-        持ち主 = null;
-        内側を破棄する();
+        CollectedExceptions 起きた例外 = new();
+        起きた例外.Run(() => 親と子.LeaveOwner(this)); // 注意: 外すときに自分の本物を読むので、破棄の印を付ける前に外す
+        内側を破棄する(起きた例外);
+        起きた例外.ThrowIfAny();
     }
 
     internal void ThrowIfDestroyed()
@@ -55,99 +57,83 @@ public abstract class Node : IChildOwner
     internal virtual void RemoveChildElement(Node child) =>
         throw new InvalidOperationException($"{GetType().Name} は子の本物を外す方法を持たない");
 
-    internal void SetOwner(IChildOwner owner)
-    {
-        ThrowIfOwned();
-        持ち主 = owner;
-    }
-
-    // WinUI の部品は親を1つしか持てない。黙って前の親から外すと、どこで付け替えたかがコードから読めなくなるので例外にする。
-    internal void ThrowIfOwned()
+    // 自分の本物を持ち主の本物へ入れてから、持ち主を覚える。入れるのに失敗したら覚えない。
+    internal void BecomeChildOf(IChildOwner owner, Action 本物へ入れる)
     {
         ThrowIfDestroyed();
-        if (持ち主 is not null)
-        {
-            throw new InvalidOperationException($"{GetType().Name} はすでに親を持つ。別の親へ入れるときは、先に Detach を呼ぶ");
-        }
+        親と子.ThrowIfOwned(this);
+        本物へ入れる();
+        親と子.SetOwner(owner);
     }
 
-    // 本物のどこへ入れた子も、これで登録する。破棄でたどる経路はこの一覧だけである。
-    internal void AdoptChild(Node child)
+    // 本物のどこへ入れた子も、これで登録する。
+    internal void AdoptChild(Node child, Action 本物へ入れる)
     {
         ThrowIfDestroyed();
-        child.SetOwner(this);
-        (子List ??= []).Add(child);
+        child.BecomeChildOf(this, 本物へ入れる);
+        親と子.AddChild(child);
     }
 
-    // 子孫の本物は1つずつ外さない。自分の本物がまとめて木から外れるか、呼び出し側が本物の子をまとめて外すためである。
+    // 子孫の本物は1つずつ外さない。呼び出し側が本物の子をまとめて外す。
     internal void DestroyAllChildren()
     {
         ThrowIfDestroyed();
-        List<Node>? 破棄する子List = 子List;
-        子List = null;
-        子を内側から破棄する(破棄する子List);
+        CollectedExceptions 起きた例外 = new();
+        子を内側から破棄する(親と子.TakeChildren(), 起きた例外);
+        起きた例外.ThrowIfAny();
     }
 
-    internal void OwnDisposable(IDisposable resource)
+    internal void OwnDisposable(IDisposable resource) => _ = OwnRemovable(resource);
+
+    // 返した値を Dispose すると先に解ける。Dispose しなくても部品の破棄で解ける。
+    internal IDisposable OwnRemovable(IDisposable resource)
     {
         ThrowIfDestroyed();
-        (預かったList ??= []).Add(resource);
+        return 後片付けの対象List.AddRemovable(resource);
     }
 
-    internal void SubscribeCell<V>(IReadOnlyCell<V> cell, Action<V> apply)
+    internal IDisposable SubscribeCell<TValue>(IReadOnlyCell<TValue> cell, Action<TValue> apply)
     {
         ThrowIfDestroyed();
-        OwnDisposable(new CellSubscriptionOnUiThread<V>(this, cell, apply));
+        return 後片付けの対象List.AddRemovable(new CellSubscriptionOnUiThread<TValue>(cell, apply));
     }
 
-    internal void MarkEventWired(NodeEvents wiredEvent)
+    internal void MarkWiredOnce(string eventName)
     {
         ThrowIfDestroyed();
-        if ((受けた出来事 & wiredEvent) != NodeEvents.None)
-        {
-            throw new InvalidOperationException($"{GetType().Name} の {wiredEvent} は受けてある。On〜 は1つの部品に1回だけ呼べる");
-        }
-        受けた出来事 |= wiredEvent;
+        受けた出来事.Mark(eventName, this);
     }
 
-    // 葉の部品が自分の出来事(OnClick など)を2回受けたかを調べる。
-    private protected void ThrowIfWiredTwice(ref bool wired, string eventName)
+    // 出来事を受ける入口。2回目は例外にし、購読を解く処理を後片付けの対象List へ入れる。処理の先頭で破棄済みなら何もしないことは、呼び出し側の処理が書く。
+    internal void WireEvent(string eventName, Action subscribe, Action unsubscribe)
     {
-        ThrowIfDestroyed();
-        if (wired)
-        {
-            throw new InvalidOperationException($"{GetType().Name} の {eventName} は受けてある。On〜 は1つの部品に1回だけ呼べる");
-        }
-        wired = true;
+        MarkWiredOnce(eventName);
+        subscribe();
+        後片付けの対象List.Add(new CallOnDispose(unsubscribe));
     }
+
+    void IChildOwner.AdoptChild(Node child, Action 本物へ入れる) => AdoptChild(child, 本物へ入れる);
 
     void IChildOwner.ReleaseChild(Node child)
     {
         RemoveChildElement(child);
-        _ = 子List?.Remove(child);
+        親と子.RemoveChild(child);
     }
 
-    private void 内側を破棄する()
+    private void 内側を破棄する(CollectedExceptions 起きた例外)
     {
         IsDestroyed = true;
-        List<IDisposable>? 解くList = 預かったList;
-        List<Node>? 破棄する子List = 子List;
-        預かったList = null;
-        子List = null;
-        foreach (IDisposable 預かったもの in 解くList ?? [])
-        {
-            預かったもの.Dispose();
-        }
-        OnDestroying();
-        子を内側から破棄する(破棄する子List);
+        後片付けの対象List.DisposeAll(起きた例外);
+        起きた例外.Run(OnDestroying);
+        子を内側から破棄する(親と子.TakeChildren(), 起きた例外);
     }
 
-    private static void 子を内側から破棄する(List<Node>? 破棄する子List)
+    private static void 子を内側から破棄する(List<Node>? 破棄する子List, CollectedExceptions 起きた例外)
     {
         foreach (Node 子 in 破棄する子List ?? [])
         {
-            子.持ち主 = null;
-            子.内側を破棄する();
+            子.親と子.ForgetOwner();
+            子.内側を破棄する(起きた例外);
         }
     }
 }

@@ -1,50 +1,44 @@
-using Microsoft.UI.Dispatching;
 using SengenWinUI3.State;
 
 namespace SengenWinUI3;
 
-// 部品の側のセルの購読(設計の文書の判断6)。知らせを受けたスレッドが部品の UI スレッドでなければ UI スレッドへ送り、送った先でセルの値を読み直す。
-// 届いた順が前後しても、最新の値で終わるためである。知らせのたびに走る処理では、ラムダも配列も作らない。
-internal sealed class CellSubscriptionOnUiThread<V> : IDisposable
+// 部品の側のセルの購読(設計の文書の判断6)。知らせに付いた値は使わず、UI スレッドでそのときのセルの値を読み直して反映する。
+// 同じスレッドの再入や別のスレッドの知らせの順が前後しても、最新の値で終わるためである。別のスレッドの知らせは UiThreadRequest が1回にまとめる。
+internal sealed class CellSubscriptionOnUiThread<TValue> : IDisposable
 {
-    private readonly Node 部品;
-    private readonly IReadOnlyCell<V> セル;
-    private readonly Action<V> 反映する;
-    private readonly DispatcherQueue 送り先;
-    private readonly DispatcherQueueHandler 送った先で反映する;
-    private readonly IDisposable 解除;
+    private readonly IReadOnlyCell<TValue> セル;
+    private readonly Action<TValue> 値を部品へ反映する;
+    private readonly IDisposable 購読を解く札;
+    private volatile bool 解いたか;
 
-    internal CellSubscriptionOnUiThread(Node 部品, IReadOnlyCell<V> セル, Action<V> 反映する)
+    internal CellSubscriptionOnUiThread(IReadOnlyCell<TValue> セル, Action<TValue> 値を部品へ反映する)
     {
-        this.部品 = 部品;
         this.セル = セル;
-        this.反映する = 反映する;
-        送り先 = DispatcherQueue.GetForCurrentThread() ?? throw new InvalidOperationException("部品へセルを結ぶのは、部品を作った UI スレッドで行う");
-        送った先で反映する = 今の値を反映する;
-        解除 = セル.Subscribe(知らせを受ける); // 注意: 購読してから今の値を読む。逆にすると、読んだ後で購読する前の変化を取りこぼす
-        反映する(セル.Value);
+        this.値を部品へ反映する = 値を部品へ反映する;
+        UiThreadRequest 反映の依頼 = new(UiThread.ForCurrentThread(), 今の値を反映する);
+        購読を解く札 = セル.Subscribe(反映の依頼.Request); // 注意: 購読してから今の値を読む。逆にすると、読んだ後で購読する前の変化を取りこぼす
+        try
+        {
+            今の値を反映する();
+        }
+        catch
+        {
+            購読を解く札.Dispose();
+            throw;
+        }
     }
 
-    public void Dispose() => 解除.Dispose();
-
-    private void 知らせを受ける(V 値)
+    public void Dispose()
     {
-        if (!送り先.HasThreadAccess)
-        {
-            _ = 送り先.TryEnqueue(送った先で反映する);
-            return;
-        }
-        if (!部品.IsDestroyed)
-        {
-            反映する(値);
-        }
+        解いたか = true;
+        購読を解く札.Dispose();
     }
 
     private void 今の値を反映する()
     {
-        if (!部品.IsDestroyed)
+        if (!解いたか)
         {
-            反映する(セル.Value);
+            値を部品へ反映する(セル.Value);
         }
     }
 }

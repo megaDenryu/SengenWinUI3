@@ -30,6 +30,13 @@ internal static class ValueConversions
         _ => throw new ArgumentOutOfRangeException(nameof(向き), 向き, null),
     };
 
+    internal static WinUI.TextWrapping ToWinUI(this TextWrapping 折り返し方) => 折り返し方 switch
+    {
+        TextWrapping.NoWrap => WinUI.TextWrapping.NoWrap,
+        TextWrapping.Wrap => WinUI.TextWrapping.Wrap,
+        _ => throw new ArgumentOutOfRangeException(nameof(折り返し方), 折り返し方, null),
+    };
+
     internal static Windows.UI.Text.FontWeight ToWinUI(this FontWeight 太さ) => 太さ switch
     {
         FontWeight.Thin => Microsoft.UI.Text.FontWeights.Thin,

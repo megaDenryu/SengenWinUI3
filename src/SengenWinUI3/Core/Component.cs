@@ -1,3 +1,4 @@
+using SengenWinUI3.State;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
@@ -25,7 +26,13 @@ public abstract class Component : Node
     protected void Own(IDisposable resource) => OwnDisposable(resource);
 
     /// <summary>木に入れていないフィールドの部品を預け、この部品の破棄で一緒に破棄する。</summary>
-    protected void Own(Node detachedNode) => OwnDisposable(new DestroyOnDispose(detachedNode.Destroy));
+    protected void Own(Node detachedNode) => OwnDisposable(new CallOnDispose(detachedNode.Destroy));
+
+    /// <summary>
+    /// セルを結ぶ。結んだ時に1回、セルの値が変わるたびに <paramref name="apply"/> を UI スレッドで呼ぶ。
+    /// 返した値を Dispose すると解ける。Dispose しなくても、この部品の破棄で解ける。使い回す行が、項目ごとに結び直すために使う(Show で結び、Release で解く)。
+    /// </summary>
+    protected IDisposable Observe<TValue>(IReadOnlyCell<TValue> cell, Action<TValue> apply) => SubscribeCell(cell, apply);
 
     internal sealed override void ApplyStyle(Style style) => 根.Value.ApplyStyle(style);
 
@@ -35,7 +42,7 @@ public abstract class Component : Node
     private Node 根を構築する()
     {
         Node 構築した根 = Build();
-        AdoptChild(構築した根);
+        AdoptChild(構築した根, static () => { }); // 根の本物は、この部品の本物として親が入れる
         return 構築した根;
     }
 }

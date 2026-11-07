@@ -27,8 +27,7 @@ public static class ChildrenExtensions
     /// <summary>子を末尾へ1つ足す。親を持つ部品を渡すと例外を投げる。</summary>
     public static T AddChild<T>(this T parent, Node child) where T : Node, IHasChildren
     {
-        parent.AdoptChild(child);
-        parent.ChildPanel.Children.Add(child.Element);
+        parent.AdoptChild(child, () => parent.ChildPanel.Children.Add(child.Element));
         return parent;
     }
 
@@ -38,8 +37,7 @@ public static class ChildrenExtensions
         parent.ThrowIfDestroyed();
         ArgumentOutOfRangeException.ThrowIfNegative(index);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, parent.ChildPanel.Children.Count);
-        parent.AdoptChild(child);
-        parent.ChildPanel.Children.Insert(index, child.Element);
+        parent.AdoptChild(child, () => parent.ChildPanel.Children.Insert(index, child.Element));
         return parent;
     }
 

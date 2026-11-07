@@ -51,8 +51,8 @@ public sealed class Style
     public Px? FontSize { get; init; }
     /// <summary>文字の太さ。</summary>
     public FontWeight? FontWeight { get; init; }
-    /// <summary>幅に収まらない文字を折り返すか(TextBlock)。</summary>
-    public bool? TextWrapping { get; init; }
+    /// <summary>幅に収まらない文字の折り返し方(TextBlock)。</summary>
+    public TextWrapping? TextWrapping { get; init; }
     /// <summary>利用者が文字を選んで写せるか(TextBlock)。</summary>
     public bool? IsTextSelectionEnabled { get; init; }
     /// <summary>不透明度。</summary>
@@ -85,9 +85,43 @@ public sealed class Style
         Opacity = overlay.Opacity ?? Opacity,
     };
 
-    internal WinUI.Media.Brush? BackgroundBrush() => Background is { } 塗り ? 背景のブラシ ??= 塗り.ToWinUI() : null;
+    internal WinUI.Media.Brush? CachedBackground() => Background is { } 塗り ? 背景のブラシ ??= 塗り.ToWinUI() : null;
 
-    internal WinUI.Media.Brush? ForegroundBrush() => Foreground is { } 塗り ? 文字のブラシ ??= 塗り.ToWinUI() : null;
+    internal WinUI.Media.Brush? CachedForeground() => Foreground is { } 塗り ? 文字のブラシ ??= 塗り.ToWinUI() : null;
 
-    internal WinUI.Media.Brush? BorderBrushBrush() => BorderBrush is { } 塗り ? 枠線のブラシ ??= 塗り.ToWinUI() : null;
+    internal WinUI.Media.Brush? CachedBorderBrush() => BorderBrush is { } 塗り ? 枠線のブラシ ??= 塗り.ToWinUI() : null;
+
+    internal void ThrowIfUnsupported(StyleItems 持つ項目, Node 部品)
+    {
+        StyleItems 持たない項目 = SpecifiedItems() & ~持つ項目;
+        if (持たない項目 != StyleItems.None)
+        {
+            throw new InvalidOperationException($"{部品.GetType().Name} は Style の {持たない項目} を持たない");
+        }
+    }
+
+    // 注意: 項目を足すときは、ここと With にも足す。足さないと、その項目を持たない部品へ当てても例外にならない
+    private StyleItems SpecifiedItems() =>
+        (Width is null ? StyleItems.None : StyleItems.Width)
+        | (Height is null ? StyleItems.None : StyleItems.Height)
+        | (MinWidth is null ? StyleItems.None : StyleItems.MinWidth)
+        | (MaxWidth is null ? StyleItems.None : StyleItems.MaxWidth)
+        | (MinHeight is null ? StyleItems.None : StyleItems.MinHeight)
+        | (MaxHeight is null ? StyleItems.None : StyleItems.MaxHeight)
+        | (Margin is null ? StyleItems.None : StyleItems.Margin)
+        | (HorizontalAlignment is null ? StyleItems.None : StyleItems.HorizontalAlignment)
+        | (VerticalAlignment is null ? StyleItems.None : StyleItems.VerticalAlignment)
+        | (Opacity is null ? StyleItems.None : StyleItems.Opacity)
+        | (Padding is null ? StyleItems.None : StyleItems.Padding)
+        | (Orientation is null ? StyleItems.None : StyleItems.Orientation)
+        | (Spacing is null ? StyleItems.None : StyleItems.Spacing)
+        | (Background is null ? StyleItems.None : StyleItems.Background)
+        | (Foreground is null ? StyleItems.None : StyleItems.Foreground)
+        | (BorderBrush is null ? StyleItems.None : StyleItems.BorderBrush)
+        | (BorderThickness is null ? StyleItems.None : StyleItems.BorderThickness)
+        | (CornerRadius is null ? StyleItems.None : StyleItems.CornerRadius)
+        | (FontSize is null ? StyleItems.None : StyleItems.FontSize)
+        | (FontWeight is null ? StyleItems.None : StyleItems.FontWeight)
+        | (TextWrapping is null ? StyleItems.None : StyleItems.TextWrapping)
+        | (IsTextSelectionEnabled is null ? StyleItems.None : StyleItems.IsTextSelectionEnabled);
 }

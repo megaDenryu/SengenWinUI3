@@ -91,6 +91,5 @@ internal sealed class VirtualListScene : Scene
         public void Release() => 集計.離れた回数++;
 
         protected override Node Build() => StackPanel(行の見た目).Children(番号の文字部品, 見出しの文字部品);
-
     }
 }

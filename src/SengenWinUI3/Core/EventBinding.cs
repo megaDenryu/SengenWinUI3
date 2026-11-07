@@ -4,7 +4,7 @@ namespace SengenWinUI3;
 internal sealed class EventBinding<TElement, THandler, TValue>
 {
     private readonly Func<TElement, Action<TValue>, THandler> ハンドラを作る;
-    private readonly Func<TElement, THandler, IDisposable> 登録する;
+    private readonly Func<TElement, THandler, IDisposable> ハンドラを登録する;
 
     internal EventBinding(Func<TElement, Action<TValue>, THandler> createHandler, Action<TElement, THandler> subscribe, Action<TElement, THandler> unsubscribe)
         : this(createHandler, (本物, ハンドラ) =>
@@ -17,8 +17,8 @@ internal sealed class EventBinding<TElement, THandler, TValue>
     internal EventBinding(Func<TElement, Action<TValue>, THandler> createHandler, Func<TElement, THandler, IDisposable> subscribe)
     {
         ハンドラを作る = createHandler;
-        登録する = subscribe;
+        ハンドラを登録する = subscribe;
     }
 
-    internal IDisposable Subscribe(TElement element, Action<TValue> handler) => 登録する(element, ハンドラを作る(element, handler));
+    internal IDisposable Subscribe(TElement element, Action<TValue> handler) => ハンドラを登録する(element, ハンドラを作る(element, handler));
 }

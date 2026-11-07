@@ -6,15 +6,7 @@ public static class MenuFlyoutExtensions
     /// <summary>メニューを部品の寿命に結び付ける。メニューだけの破棄で外れ、再び付けられる。</summary>
     public static T ContextFlyout<T>(this T node, MenuFlyout menu) where T : Node
     {
-        node.ThrowIfDestroyed();
-        menu.ThrowIfAttached();
-        node.MarkWiredOnce(nameof(ContextFlyout));
-        node.Element.ContextFlyout = menu.Element;
-        menu.AttachTo(node, () =>
-        {
-            node.Element.ContextFlyout = null;
-            node.UnmarkWired(nameof(ContextFlyout));
-        });
+        menu.AttachFlyoutTo(node, nameof(ContextFlyout), 本物 => node.Element.ContextFlyout = 本物, () => node.Element.ContextFlyout = null);
         return node;
     }
 }

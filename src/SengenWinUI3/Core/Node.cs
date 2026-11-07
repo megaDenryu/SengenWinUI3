@@ -3,18 +3,17 @@ using WinUI = Microsoft.UI.Xaml;
 namespace SengenWinUI3;
 
 /// <summary>画面の木に入れられるものすべての基底。本物の WinUI の部品を1つ持ち、外へは見せない。外からは <see cref="Component"/> だけを継承できる。</summary>
-public abstract class Node : IChildOwner
+public abstract class Node : IChildOwner, ILifetimeOwner
 {
     private readonly NodeFamily 親子関係 = new();
-    private readonly CleanupList 後片付けの台帳 = new();
-    private readonly EventWiringMarks 受けた出来事 = new();
+    private readonly Lifetime 寿命;
 
-    private protected Node() { }
+    private protected Node() => 寿命 = new(GetType().Name);
 
     internal abstract WinUI.FrameworkElement Element { get; }
 
     /// <summary>後片付けを始めた後は true。利用する側は、UI スレッドへ送った反映の前にもこの値を調べられる。</summary>
-    public bool IsDestroyed { get; private set; }
+    public bool IsDestroyed => 寿命.IsDestroyed;
 
     /// <summary>今の親から外す。購読は残すので、別の親へ入れ直せる。親が無ければ何もしない。</summary>
     public void Detach()
@@ -33,20 +32,14 @@ public abstract class Node : IChildOwner
         {
             return;
         }
-        親子関係.ThrowIfCannotLeave(this); // 外せない子(一覧の行・Component の根)は、何も変えずに例外を投げる
-        CollectedExceptions 起きた例外 = new();
-        起きた例外.Run(() => 親子関係.LeaveOwner(this)); // 注意: 外すときに自分の本物を読むので、破棄の印を付ける前に外す
-        内側を破棄する(起きた例外);
-        起きた例外.ThrowIfAny();
+        親子関係.ThrowIfCannotLeave(this); // 外せない子(一覧の行・Component の根)を破棄しようとすると、親は状態を変えずに例外を投げる
+        CollectedExceptions 集めた例外 = new();
+        集めた例外.Run(() => 親子関係.LeaveOwner(this)); // 注意: 外すときに自分の本物を読むので、破棄の印を付ける前に外す
+        内側を破棄する(集めた例外);
+        集めた例外.ThrowIfAny();
     }
 
-    internal void ThrowIfDestroyed()
-    {
-        if (IsDestroyed)
-        {
-            throw new InvalidOperationException($"{GetType().Name} は破棄した後に操作された");
-        }
-    }
+    internal void ThrowIfDestroyed() => 寿命.ThrowIfDestroyed();
 
     // 種類ごとの見た目の当て方。既定は、どの項目も持たない部品として、null でない項目があれば例外を投げる。
     internal virtual void ApplyStyle(Style style) => style.ThrowIfUnsupported(StyleItems.None, this);
@@ -81,33 +74,21 @@ public abstract class Node : IChildOwner
     internal void DestroyAllChildren(Action 本物の子をまとめて外す)
     {
         ThrowIfDestroyed();
-        CollectedExceptions 起きた例外 = new();
-        子を内側から破棄する(親子関係.TakeChildren(), 起きた例外);
-        起きた例外.Run(本物の子をまとめて外す);
-        起きた例外.ThrowIfAny();
+        CollectedExceptions 集めた例外 = new();
+        子を内側から破棄する(親子関係.TakeChildren(), 集めた例外);
+        集めた例外.Run(本物の子をまとめて外す);
+        集めた例外.ThrowIfAny();
     }
 
-    internal void OwnDisposable(IDisposable resource)
-    {
-        ThrowIfDestroyed();
-        後片付けの台帳.Add(resource);
-    }
+    internal void OwnDisposable(IDisposable resource) => 寿命.OwnDisposable(resource);
 
-    // 返した値を Dispose すると先に解ける。Dispose しなくても部品の破棄で解ける。
-    internal IDisposable OwnRemovable(IDisposable resource)
-    {
-        ThrowIfDestroyed();
-        return 後片付けの台帳.AddRemovable(resource);
-    }
+    internal IDisposable OwnRemovable(IDisposable resource) => 寿命.OwnRemovable(resource);
 
-    internal void MarkWiredOnce(string eventName)
-    {
-        ThrowIfDestroyed();
-        受けた出来事.Mark(eventName, this);
-    }
+    internal void MarkWiredOnce(string eventName) => 寿命.MarkWiredOnce(eventName);
 
-    // 1回だけの配線を外したとき(付けた Flyout だけを破棄したとき)に印を戻し、また配線できるようにする。破棄の途中からも呼ばれる。
-    internal void UnmarkWired(string eventName) => 受けた出来事.Unmark(eventName);
+    internal void UnmarkWired(string eventName) => 寿命.UnmarkWired(eventName);
+
+    Lifetime ILifetimeOwner.Lifetime => 寿命;
 
     void IChildOwner.AdoptChild(Node child, Action 本物へ入れる) => AdoptChild(child, 本物へ入れる);
 
@@ -130,20 +111,19 @@ public abstract class Node : IChildOwner
         }
     }
 
-    private void 内側を破棄する(CollectedExceptions 起きた例外)
+    private void 内側を破棄する(CollectedExceptions 集めた例外)
     {
-        IsDestroyed = true;
-        後片付けの台帳.DisposeAll(起きた例外);
-        起きた例外.Run(OnDestroying);
-        子を内側から破棄する(親子関係.TakeChildren(), 起きた例外);
+        寿命.Destroy(集めた例外);
+        集めた例外.Run(OnDestroying);
+        子を内側から破棄する(親子関係.TakeChildren(), 集めた例外);
     }
 
-    private static void 子を内側から破棄する(List<Node>? 破棄する子List, CollectedExceptions 起きた例外)
+    private static void 子を内側から破棄する(List<Node>? 破棄する子List, CollectedExceptions 集めた例外)
     {
         foreach (Node 子 in 破棄する子List ?? [])
         {
             子.親子関係.ForgetOwner();
-            子.内側を破棄する(起きた例外);
+            子.内側を破棄する(集めた例外);
         }
     }
 }

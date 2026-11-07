@@ -15,9 +15,13 @@ internal sealed class FloatingScene : Scene
     {
         ポップアップ = Popup(StackPanel(縦に並べる見た目).Children(
             TextBlock("基準から横 0、縦 40 の位置"),
-            Button("閉じる").OnClick(ポップアップを閉じる)), 0.Px, 40.Px, true);
-        確認の画面 = ContentDialog("操作を確認する", TextBlock("3種類の結果を報告する"),
-            ボタンの文字("主の操作"), ボタンの文字("2つ目の操作"), ボタンの文字("閉じる"));
+            Button("閉じる").OnClick(ポップアップを閉じる)), new Point(0.Px, 40.Px), true);
+        確認の画面 = ContentDialog("操作を確認する", TextBlock("3種類の結果を報告する"), new ContentDialogButtons
+        {
+            Primary = 文字からボタンの文字を作る("主の操作"),
+            Secondary = 文字からボタンの文字を作る("2つ目の操作"),
+            Close = 文字からボタンの文字を作る("閉じる"),
+        });
         this.Own(ポップアップ).Own(確認の画面);
         ポップアップの基準.OnClick(ポップアップを開く).ToolTip("閉じた後も同じ基準から開ける");
         ダイアログの基準.OnClick(確認の画面を開く);
@@ -47,7 +51,7 @@ internal sealed class FloatingScene : Scene
         Run.Report("ポップアップを閉じた");
     }
 
-    private static DialogButtonText ボタンの文字(string 文字) => DialogButtonText.TryFromText(文字) switch
+    private static DialogButtonText 文字からボタンの文字を作る(string 文字) => DialogButtonText.TryFromText(文字) switch
     {
         DialogButtonText 表示 => 表示,
         DialogButtonTextError => throw new InvalidOperationException("見本のボタンの文字が空である"),

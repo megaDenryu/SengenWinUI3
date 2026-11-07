@@ -5,17 +5,16 @@ namespace SengenWinUI3;
 /// <summary>基準の部品から指定した位置へ、中身を重ねて出す。</summary>
 public sealed class Popup : FloatingNode
 {
-    private readonly WinUI.Controls.Primitives.Popup 本物 = new();
-    private readonly ContentSlot 中身置き場;
-    private readonly Px 横の位置;
-    private readonly Px 縦の位置;
-    private 接続状態 接続 = new 未接続();
-    private bool 読み込みを待つか;
+    private static readonly IDisposable 待っていない = new CallOnDispose(static () => { });
 
-    internal Popup(Node content, Px horizontalOffset, Px verticalOffset, bool isLightDismissEnabled)
+    private readonly WinUI.Controls.Primitives.Popup 本物 = new();
+    private readonly FloatingContent 中身置き場;
+    private readonly Point 基準からのずれ;
+    private IDisposable 読み込みの待ち = 待っていない; // 基準の読み込みを待つ購読。待っていなければ、解いても何もしない札
+
+    internal Popup(Node content, Point offset, bool isLightDismissEnabled)
     {
-        横の位置 = horizontalOffset;
-        縦の位置 = verticalOffset;
+        基準からのずれ = offset;
         本物.IsLightDismissEnabled = isLightDismissEnabled;
         中身置き場 = new(this, 中身 => 本物.Child = 中身);
         中身置き場.SetContent(content);
@@ -26,21 +25,16 @@ public sealed class Popup : FloatingNode
     {
         ThrowIfDestroyed();
         anchor.ThrowIfDestroyed();
-        Node 基準 = 接続 switch
-        {
-            未接続 => 接続する(anchor),
-            接続済み 状態 when ReferenceEquals(状態.Anchor, anchor) => 状態.Anchor,
-            接続済み => throw new InvalidOperationException("Popup は別の基準へ付け替えられない"),
-        };
+        AttachOnceTo(anchor, 閉じる);
         待機を解く();
-        if (基準.Element.IsLoaded)
+        WinUI.FrameworkElement 基準 = anchor.Element;
+        if (基準.IsLoaded)
         {
-            開く(基準.Element);
+            開く(基準);
         }
         else
         {
-            基準.Element.Loaded += 読み込まれたら開く;
-            読み込みを待つか = true;
+            読み込みの待ち = this.WireRemovableEvent(基準, NodeEvents.Loaded, () => 読み込まれたら開く(基準));
         }
     }
 
@@ -61,21 +55,11 @@ public sealed class Popup : FloatingNode
 
     internal override void OnDestroying()
     {
-        CollectedExceptions 起きた例外 = new();
-        起きた例外.Run(閉じる);
-        起きた例外.Run(中身置き場.DestroyContent);
-        接続 = new 未接続();
+        CollectedExceptions 集めた例外 = new();
+        集めた例外.Run(閉じる);
+        集めた例外.Run(中身置き場.DestroyContent);
         本物.XamlRoot = null;
-        起きた例外.ThrowIfAny();
-    }
-
-    private protected override void ReleaseContent(Node content) => 中身置き場.Release(content);
-
-    private Node 接続する(Node 基準)
-    {
-        AttachTo(基準, 閉じる);
-        接続 = new 接続済み(基準);
-        return 基準;
+        集めた例外.ThrowIfAny();
     }
 
     private void 開く(WinUI.FrameworkElement 基準)
@@ -83,25 +67,22 @@ public sealed class Popup : FloatingNode
         WinUI.XamlRoot 根 = 基準.XamlRoot ?? throw new InvalidOperationException("Popup の基準に XamlRoot が無い");
         Windows.Foundation.Point 位置 = 基準.TransformToVisual(根.Content).TransformPoint(new Windows.Foundation.Point(0, 0));
         本物.XamlRoot = 根;
-        本物.HorizontalOffset = 位置.X + 横の位置.Value;
-        本物.VerticalOffset = 位置.Y + 縦の位置.Value;
+        本物.HorizontalOffset = 位置.X + 基準からのずれ.X.Value;
+        本物.VerticalOffset = 位置.Y + 基準からのずれ.Y.Value;
         本物.IsOpen = true;
     }
 
-    private void 読み込まれたら開く(object 送信元, WinUI.RoutedEventArgs 出来事)
+    private void 読み込まれたら開く(WinUI.FrameworkElement 基準)
     {
         待機を解く();
-        if (!IsDestroyed && 接続 is 接続済み 状態) 開く(状態.Anchor.Element);
+        開く(基準);
     }
 
     private void 待機を解く()
     {
-        if (読み込みを待つか && 接続 is 接続済み 状態) 状態.Anchor.Element.Loaded -= 読み込まれたら開く;
-        読み込みを待つか = false;
+        読み込みの待ち.Dispose();
+        読み込みの待ち = 待っていない;
     }
 
     private void 閉じる() { 待機を解く(); 本物.IsOpen = false; }
-    private sealed record 未接続;
-    private sealed record 接続済み(Node Anchor);
-    private union 接続状態(未接続, 接続済み);
 }

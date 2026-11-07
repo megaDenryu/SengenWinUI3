@@ -6,19 +6,17 @@ namespace SengenWinUI3;
 public sealed class ContentDialog : FloatingNode
 {
     private readonly WinUI.Controls.ContentDialog 本物 = new();
-    private readonly ContentSlot 中身置き場;
+    private readonly FloatingContent 中身置き場;
     private readonly ElementValue<WinUI.Controls.ContentDialog, string> 見出し;
-    private 接続状態 接続 = new 未接続();
 
-    internal ContentDialog(string title, Node content, ContentDialogButton primaryButtonText,
-        ContentDialogButton secondaryButtonText, ContentDialogButton closeButtonText)
+    internal ContentDialog(string title, Node content, ContentDialogButtons buttons)
     {
         見出し = new(本物, static (本物, 文字) => 本物.Title is string 現在の文字 && 現在の文字 == 文字,
             static (本物, 文字) => 本物.Title = 文字);
         見出し.Set(title);
-        本物.PrimaryButtonText = primaryButtonText.ToWinUI();
-        本物.SecondaryButtonText = secondaryButtonText.ToWinUI();
-        本物.CloseButtonText = closeButtonText.ToWinUI();
+        本物.PrimaryButtonText = buttons.Primary.ToWinUI();
+        本物.SecondaryButtonText = buttons.Secondary.ToWinUI();
+        本物.CloseButtonText = buttons.Close.ToWinUI();
         中身置き場 = new(this, 中身 => 本物.Content = 中身);
         中身置き場.SetContent(content);
     }
@@ -29,12 +27,7 @@ public sealed class ContentDialog : FloatingNode
         ThrowIfDestroyed();
         anchor.ThrowIfDestroyed();
         WinUI.XamlRoot 根 = anchor.Element.XamlRoot ?? throw new InvalidOperationException("ContentDialog の基準に XamlRoot が無い");
-        _ = 接続 switch
-        {
-            未接続 => 接続する(anchor),
-            接続済み 状態 when ReferenceEquals(状態.Anchor, anchor) => 状態.Anchor,
-            接続済み => throw new InvalidOperationException("ContentDialog は別の基準へ付け替えられない"),
-        };
+        AttachOnceTo(anchor, 本物.Hide);
         本物.XamlRoot = 根;
         WinUI.Controls.ContentDialogResult 結果 = await 本物.ShowAsync();
         return 結果 switch
@@ -67,23 +60,9 @@ public sealed class ContentDialog : FloatingNode
 
     internal override void OnDestroying()
     {
-        CollectedExceptions 起きた例外 = new();
-        起きた例外.Run(本物.Hide);
-        起きた例外.Run(中身置き場.DestroyContent);
-        接続 = new 未接続();
-        起きた例外.ThrowIfAny();
+        CollectedExceptions 集めた例外 = new();
+        集めた例外.Run(本物.Hide);
+        集めた例外.Run(中身置き場.DestroyContent);
+        集めた例外.ThrowIfAny();
     }
-
-    private protected override void ReleaseContent(Node content) => 中身置き場.Release(content);
-
-    private Node 接続する(Node 基準)
-    {
-        AttachTo(基準, 本物.Hide);
-        接続 = new 接続済み(基準);
-        return 基準;
-    }
-
-    private sealed record 未接続;
-    private sealed record 接続済み(Node Anchor);
-    private union 接続状態(未接続, 接続済み);
 }

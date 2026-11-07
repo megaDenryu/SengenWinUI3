@@ -27,6 +27,6 @@ internal sealed class ContentSlot(IContentOwner 持ち主, Action<WinUI.UIElemen
         中身 = null;
     }
 
-    // 子の台帳を持たない持ち主(浮かぶ部品・ウインドウ)が、自分の破棄のときに呼ぶ。
+    // 子List を持たない持ち主(浮かぶ部品の中身・ウインドウ)が、自分の破棄のときに呼ぶ。
     internal void DestroyContent() => 中身?.Destroy();
 }

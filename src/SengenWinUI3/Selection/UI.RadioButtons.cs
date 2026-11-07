@@ -6,6 +6,6 @@ public static partial class UI
     public static RadioButtons RadioButtons(Style? style = null) => StyleIfGiven(new RadioButtons(), style);
 
     /// <summary>項目を入れてから初期選択を設定した選択肢の集まりを作る。</summary>
-    public static RadioButtons RadioButtons(IEnumerable<Node?> children, SelectionIndex selectedIndex, Style? style = null) =>
+    public static RadioButtons RadioButtons(Node?[] children, SelectionIndex selectedIndex, Style? style = null) =>
         StyleIfGiven(new RadioButtons().Children(children).SetSelectedIndex(selectedIndex), style);
 }

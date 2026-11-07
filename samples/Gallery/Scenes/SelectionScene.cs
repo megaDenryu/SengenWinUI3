@@ -11,7 +11,7 @@ internal sealed class SelectionScene : Scene
     private static readonly SelectionIndex 次の位置 = 位置を作る(1);
 
     private readonly TextBlock 外せる項目 = TextBlock("取り外せる項目");
-    private readonly ListView 一覧 = ListView(部品の見た目).Children(TextBlock("項目 A"), TextBlock("項目 B"));
+    private readonly ListView 一覧 = ListView([TextBlock("項目 A"), TextBlock("項目 B")], new NoSelection(), 部品の見た目);
     private readonly ComboBox 候補欄 = ComboBox([TextBlock("項目 A"), TextBlock("項目 B")], 先頭の位置, 部品の見た目);
     private readonly RadioButtons 選択肢 = RadioButtons([TextBlock("項目 A"), TextBlock("項目 B")], new NoSelection(), 部品の見た目);
 
@@ -23,7 +23,7 @@ internal sealed class SelectionScene : Scene
     }
 
     protected override Node Build() => StackPanel(画面の見た目).Children(
-        TextBlock("選択の通知は場面の結果に出る。設定ボタンでは選択の通知が出ないことを確認する。"),
+        TextBlock("選択の通知は場面の結果に出る。設定と項目操作のボタンでは選択の通知が出ないことを確認する。"),
         TextBlock("ListView"), 一覧,
         TextBlock("ComboBox"), 候補欄,
         TextBlock("RadioButtons"), 選択肢,

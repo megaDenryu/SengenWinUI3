@@ -10,6 +10,9 @@ internal sealed class SceneRun(WinUI.Window ウインドウ, Action<string> 結�
 
     private readonly List<Func<string>> 閉じた後に書く文List = [];
 
+    // トースト置き場を付けるなど、場面がウインドウそのものに触るときに使う。
+    internal WinUI.Window Window => ウインドウ;
+
     internal void Report(string 文) => 結果を書く(文);
 
     internal IDisposable ReportOnDispose(string 文) => new 破棄されたら書く札(this, 文);

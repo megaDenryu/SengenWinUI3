@@ -19,7 +19,7 @@ public sealed class TextBox : Node, IControlNode
         本物.AcceptsReturn = acceptsReturn;
         本物.TextWrapping = textWrapping.ToWinUI();
         ElementValue<WinUI.Controls.TextBox, string> 設定先 = new(本物,
-            static (本物, 値) => (本物.Text).Equals(値),
+            static (本物, 値) => string.Equals(本物.Text, 値, StringComparison.Ordinal),
             static (本物, 値) => 本物.Text = 値);
         文字 = new(text, 設定先.Set);
         文字.Set(text);

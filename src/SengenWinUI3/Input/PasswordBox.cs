@@ -17,7 +17,7 @@ public sealed class PasswordBox : Node, IControlNode
     {
         本物.PlaceholderText = placeholderText;
         ElementValue<WinUI.Controls.PasswordBox, string> 設定先 = new(本物,
-            static (本物, 値) => (本物.Password).Equals(値),
+            static (本物, 値) => string.Equals(本物.Password, 値, StringComparison.Ordinal),
             static (本物, 値) => 本物.Password = 値);
         文字 = new(password, 設定先.Set);
         文字.Set(password);

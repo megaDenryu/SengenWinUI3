@@ -1,54 +1,158 @@
 # SengenWinUI3
 
-WinUI 3 の部品を、C# のコードで構築・配線・更新するための部品のライブラリである。XAML で部品の木を書かず、データバインディングも使わない。利用する側は、部品の木を C# の式で組み(構築)、操作と処理をつなぎ(配線)、表示を変えるときは更新の操作を明示的に呼ぶ(更新)。
+SengenWinUI3 は、WinUI 3 の部品を C# の式で構築・配線・更新するための薄いライブラリである。利用する側は部品の木を組み、出来事を処理へつなぎ、`Set〜` を呼んで表示を更新する。
 
-同じ考え方のライブラリに、TypeScript(DOM)版の SengenUI と、Rust(egui)版の [SengenEgui](https://github.com/megaDenryu/SengenEgui) がある。
+核は部品の型と作る関数・型を保つチェーン・`Style`・値の型・親子と破棄を持つ。値の入れ物・購読と結ぶ仕組み・UI スレッドへ送る仕組み・実行中の条件表示・トースト・ウインドウごとの状態は、利用する側が自分で書く。
 
-## 状態
-
-このライブラリは、WinUI 3 の部品の薄い包みとして一般に必要な関数と型を、利用する側(OneOnet のネイティブ版 [ONE.O.NET](https://github.com/megaDenryu/ONE.O.NET))から逆算せずにそろえる。それより後に足りないと分かったものは、利用する側で使われた形から足す。
-
-| 部品 | 作るもの |
-|---|---|
-| `文章.From文字(文字)` | 画面の幅で折り返し、利用者が選んで写せる文章(`TextBlock`) |
-| `見出し.From文字(文字)` | 画面の名前を示す見出し(`TextBlock`) |
-| `小見出し.From文字(文字)` | 画面の中の1つのまとまりの頭に置く、見出しより1段小さい見出し(`TextBlock`) |
-| `横の並び.From部品(部品…)` | ボタンの組のように、1行に横へ並べる並び(`StackPanel`) |
-| `縦の並び.From部品(部品…)` | 入力の欄や文章のまとまりを、上から下へ並べる並び(`StackPanel`) |
-| `縦にスクロールする画面.From部品(部品…)` | 部品を縦に並べて読みやすい幅で左に寄せ、収まらない分をスクロールで見せる画面(`ScrollViewer`) |
+同じ考え方のライブラリに TypeScript(DOM)版の SengenUI と、Rust(egui)版の [SengenEgui](https://github.com/megaDenryu/SengenEgui) がある。
 
 ## 使い方
 
-部品は WinUI 3 の部品をそのまま返す。返した部品の設定を後から変えてもよく、WinUI 3 の部品と入れ子にしてもよい。
+利用する側は、`using SengenWinUI3;` と `using static SengenWinUI3.UI;` で型と作る関数を取り込む。関数は自前の型で部品を返し、本物の WinUI の部品は公開しない。すべての公開の操作は UI スレッドで呼ぶ。
 
 ```csharp
 using SengenWinUI3;
+using static SengenWinUI3.UI;
 
-var 画面 = 縦にスクロールする画面.From部品(
-    見出し.From文字("キャラクターを直す"),
-    文章.From文字("保存するまでファイルに書かない。"),
-    横の並び.From部品(保存のボタン, やめるボタン));
+sealed class EditScreen : Component
+{
+    private static readonly Style 画面の見た目 = new()
+    {
+        Padding = new Thickness(16.Px),
+        Spacing = 12.Px,
+    };
+    private readonly TextBlock 結果 = TextBlock("保存前");
+
+    protected override Node Build() => StackPanel(画面の見た目).Children(
+        TextBlock("キャラクターを編集する"),
+        結果,
+        Button("保存").OnClick(保存する));
+
+    private void 保存する() => 結果.SetText("保存した");
+}
 ```
 
-部品の並びを条件で変えるときは、配列の式で組む。WinUI 3 の解析器(CsWinRT1032)は、`IEnumerable` へ渡す集まりの式を止めるため、並びの部品は配列を受け取る。
+アプリの `Window` を持つファイルでは、`window.SetContent(new EditScreen())` で根を置く。2回目の `SetContent` では前の根を破棄し、ウインドウが閉じたときも根を破棄する。
+
+Component の派生のコンストラクタでは、自分へ OnLoaded・OnUnloaded・OnSizeChanged・Style など本物を読む操作を呼ばない。その場で Build が走るためである。利用する側は構築した後のチェーンか、Build で作る根や子で登録する。Own と IsDestroyed は本物を読まない。
+
+## 生の WinUI の画面へ置く
+
+移行中の生の WinUI の木へ部品を置くときは NodeHost を使う。NodeHost は根を1つ持ち、Element で入れ物だけを公開する。次の例の window はアプリの Window である。
 
 ```csharp
-縦にスクロールする画面.From部品([見出し.From文字("最初のキャラクターを作る"), .. 足りないものの部品List]);
+var 文章 = TextBlock("移行中の画面");
+var 入れ物 = new NodeHost(文章);
+var 生の格子 = new Microsoft.UI.Xaml.Controls.Grid();
+生の格子.Children.Add(入れ物.Element);
+window.Content = 生の格子;
+window.Closed += (_, _) => 入れ物.Destroy();
 ```
+
+利用する側は SetContent(Node) で根を置き換え、Destroy() で根を破棄する。一時的な Unloaded では根を自動で破棄しない。利用する側は入れ物の Content を直接変更せず、この2つの操作を使う。生の型は完全修飾名か名前空間の別名で書き、SengenWinUI3 と同じ名前の型を衝突させない。
+
+WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHost と、Window を受ける WindowExtensions だけである。後の Popup.Open に渡す基準には、入れ物の中の文章のような Node を使える。Popup は基準が読み込み済みなら今開き、未読み込みなら内部で読み込みを待つ。同じ基準で Close と Open を何度でも行える契約である。Popup の位置は開いたときに1回だけ決まり、開いている間に基準が動いても付いていかない。
+
+## 部品と更新
+
+| 実装済みの部品 | 作る関数と主な操作 |
+|---|---|
+| `StackPanel` | `StackPanel(style)`・`Children(...)`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `TextBlock` | `TextBlock(text, style)`・`SetText` |
+| `Button` | `Button(text, style)` または `Button(content, style)`・`OnClick`・`SetContent` |
+| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource` |
+| `ScrollViewer` | `ScrollViewer(content, style)`・`SetContent`・`ScrollToEnd`・`StickToEnd` |
+| `VirtualList<TItem, TRow>` | `VirtualList<TItem, TRow>(createRow, style)`・`SetItems`・`ReplaceItem` など |
+| `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `Border` | `Border(content, style)`・`SetContent` |
+| `Canvas` | `Canvas(style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`OnTextChanged` |
+| `PasswordBox` | `PasswordBox(password, placeholderText, style)`・`SetPassword`・`OnPasswordChanged` |
+| `NumberBox` | `NumberBox(value, minimum, maximum, style)`・`SetValue`・`OnValueChanged` |
+| `Slider` | `Slider(value, minimum, maximum, stepFrequency, style)`・`SetValue`・`OnValueChanged` |
+| `CheckBox` | `CheckBox(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged` |
+| `ToggleButton` | `ToggleButton(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged` |
+| `ToggleSwitch` | `ToggleSwitch(isOn, header, style)`・`SetIsOn`・`OnToggled` |
+| `HyperlinkButton` | `HyperlinkButton(content, style)` または `HyperlinkButton(content, navigateUri, style)`・`SetContent`・`OnClick` |
+| `ListView` | `ListView(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged`。`children` は `Node?[]` で受ける |
+| `ComboBox` | `ComboBox(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged` |
+| `RadioButtons` | `RadioButtons(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged` |
+| `FontIcon` | `FontIcon(glyph, style)`・`SetGlyph` |
+| `SymbolIcon` | `SymbolIcon(symbol, style)`・`SetSymbol` |
+| `ProgressBar` | `ProgressBar(progress, style)`・`SetProgress` |
+| `ProgressRing` | `ProgressRing(isActive, progress, style)`・`SetProgress`・`SetIsActive` |
+| `Rectangle`・`Ellipse` | `Rectangle(style)`・`Ellipse(style)`。固有の操作は無い |
+| `Line` | `Line(start, end, style)`・`SetStart`・`SetEnd`(`start` と `end` は `Point`) |
+| `CalendarDatePicker` | `CalendarDatePicker(date, style)`・`SetDate`・`OnDateChanged` |
+| `ColorPicker` | `ColorPicker(color, style)`・`SetColor`・`OnColorChanged` |
+| `Popup` | `Popup(content, offset, isLightDismissEnabled)`(`offset` は `Point`)・`Open(anchor)`・`Close`・`SetContent` |
+| `ContentDialog` | `ContentDialog(title, content, buttons)`(`buttons` は `ContentDialogButtons` で、`Primary`・`Secondary`・`Close` を名前付きで渡す)・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
+| `Flyout` | `Flyout(content)` か `MenuFlyout(...)` を `button.Flyout(...)` で付ける |
+| `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
+| `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |
+| `NodeHost` | `new NodeHost(content)`・`Element`・`SetContent`・`Destroy`。生の木へ置く入れ物 |
+
+作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
+
+チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)` で付ける。
+
+部品の範囲と契約は [設計文書](docs/設計.md) にある。
+
+## 見た目
+
+利用する側は `static readonly Style` に名前を付けて共有し、`With(new Style { ... })` で派生を作る。null の項目は当てず、部品が持たない項目を当てると例外になる。
+
+| 部品 | 共通の幅・高さ・最小最大・Margin・寄せ方・Opacity に追加できる項目 |
+|---|---|
+| `StackPanel` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・Orientation・Spacing |
+| `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled |
+| `Button`・`ScrollViewer` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `Grid` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・RowSpacing・ColumnSpacing |
+| `Border` | Padding・Background・BorderBrush・BorderThickness・CornerRadius |
+| `Canvas` | Background |
+| `ListView`・`ComboBox`・`RadioButtons`・`TextBox`・`PasswordBox`・`NumberBox`・`Slider`・`CheckBox`・`ToggleButton`・`ToggleSwitch`・`HyperlinkButton`・`ProgressBar`・`ProgressRing`・`CalendarDatePicker`・`ColorPicker` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `FontIcon` | Foreground・FontSize・FontWeight・FontFamily |
+| `SymbolIcon` | Foreground。大きさは Width・Height で指定する |
+| `Rectangle`・`Ellipse`・`Line` | Fill・Stroke・StrokeThickness |
+| `Image`・`VirtualList` | 共通の項目のみ |
+
+浮かぶ部品の `Popup`・`ContentDialog`・`MenuFlyout` は Style を受けない。`Popup` の中身の部品には Style を当てられる。
+
+長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。横と縦の2つの長さの組は `Point` の値で渡す(`new Point(0.Px, 40.Px)`)。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
+
+## 寿命と出来事
+
+`Detach()` は部品を今の親から外す。部品は資源を保持するので、利用する側は別の親へ入れ直せる。`Destroy()` は、親から外し、預けた資源を登録順に解き、OnDestroying、子孫の破棄の順に行う。2回目の Destroy は何もしない。破棄後の操作は例外になる。
+
+利用する側は `node.Own(resource)`・`node.Own(detachedNode)`・`node.Own(floatingNode)` で資源と部品を預ける。チェーンの戻り値は元の具象型を保つ。利用する側でも解く資源の Dispose は、2回呼んでも害の無い形にする。Component の派生の中では `this.Own(...)` と書く。
+
+Own(Node) は、預ける時点で親の無い部品を受ける。その後は預け先と同じ寿命の木へ出し入れでき、預け先の破棄時には現在の親から外して破棄する。UI スレッドへ送った反映の処理では、利用する側は Node の公開の IsDestroyed を読んで、破棄済みなら反映しない。
+
+`OnLoaded(Action)` と `OnUnloaded(Action)` は、読み込みと取り外しが起きるたびに処理を呼ぶ。同じ部品の同じ出来事への2回目の登録は例外になる。登録は部品の破棄で解く。利用する側は破棄時の後片付けを Own に預ける。
+
+入力と選択の部品を足す際は、On〜Changed は利用者が値を変えたときだけ呼ぶ。部品は最後にプログラムが Set〜 で設定した値を保持し、現在値がその値と等しい出来事は、後から届いた場合も通知しない。内側の共通型 InputValue と、本物の現在値を読み直す契約を使う。
+
+## 行の使い回しと見本
+
+件数に上限の無い一覧は `VirtualList` で書く。行は Component と `IRecyclableRow<TItem>` を実装し、`Show(item)` で子の Set〜 を呼ぶ。行の作者は、項目に結び付いた資源を `Release()` で解く。核は行の購読を持たない。
+
+VirtualList はスクロールを持たないので、利用する側は ScrollViewer の中に置く。ScrollViewer には高さの決まる配置が必要であり、StackPanel の中では高さが無限になって使い回しが効かない場合がある。
+
+`samples/Gallery/Scenes/VirtualListScene.cs` は、10000件の表示と項目の置き換えを示す。Gallery の場面の一覧は Scene の派生型を自動で列挙する。
 
 ## ビルド
 
-ビルドには、`global.json` で固定した .NET SDK(.NET 11 RC2)を導入する。
+ビルドには `global.json` で固定した .NET SDK を使う。
 
 ```powershell
 # 実行場所: リポジトリのルート
 dotnet build SengenWinUI3.sln --no-incremental
 ```
 
-## 規約
+## 設計と規約
 
-C# の規約は ONE.O.NET のものを使い、このリポジトリにはコピーを持たない。読む入口は `.claude/commands/rule.md` である。
+層・公開する型の契約・部品の範囲・性能の判断は [docs/設計.md](docs/設計.md) にある。C# の規約を読む入口は `.claude/commands/rule.md` である。
 
 ## ライセンス
 
-MIT License。[LICENSE](LICENSE) を見る。
+MIT License。[LICENSE](LICENSE) を参照する。

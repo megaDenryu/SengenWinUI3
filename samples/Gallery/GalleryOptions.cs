@@ -6,7 +6,7 @@ namespace Gallery;
 // 起動の引数から読んだ設定。--scene 場面の型の名前(省くと場面の一覧)・--report 結果を書くファイル(省くとデバッグの出力)・--auto(場面の手順を自動で進め、終えたら閉じる)。
 internal sealed record GalleryOptions(StartScreen 始める画面, Action<string> 結果を書く, bool 自動で進めるか)
 {
-    private static readonly UTF8Encoding 印の無いUTF8 = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly UTF8Encoding バイト順マークの無いUTF8 = new(encoderShouldEmitUTF8Identifier: false);
 
     internal static GalleryOptions FromArgs(IReadOnlyList<string> 引数List)
     {
@@ -18,12 +18,12 @@ internal sealed record GalleryOptions(StartScreen 始める画面, Action<string
             switch (引数List[位置])
             {
                 case "--scene":
-                    始める画面 = new NamedSceneScreen(SceneCatalog.FindType(次の値(引数List, ref 位置)));
+                    始める画面 = new NamedSceneScreen(SceneCatalog.FindType(次の引数の値を受け取る(引数List, ref 位置)));
                     break;
                 case "--report":
-                    string 書く先 = Path.GetFullPath(次の値(引数List, ref 位置));
-                    File.WriteAllText(書く先, "", 印の無いUTF8);
-                    結果を書く = 文 => File.AppendAllText(書く先, 文 + "\n", 印の無いUTF8);
+                    string 書く先 = Path.GetFullPath(次の引数の値を受け取る(引数List, ref 位置));
+                    File.WriteAllText(書く先, "", バイト順マークの無いUTF8);
+                    結果を書く = 文 => File.AppendAllText(書く先, 文 + "\n", バイト順マークの無いUTF8);
                     break;
                 case "--auto":
                     自動で進めるか = true;
@@ -35,7 +35,7 @@ internal sealed record GalleryOptions(StartScreen 始める画面, Action<string
         return new GalleryOptions(始める画面, 結果を書く, 自動で進めるか);
     }
 
-    private static string 次の値(IReadOnlyList<string> 引数List, ref int 位置)
+    private static string 次の引数の値を受け取る(IReadOnlyList<string> 引数List, ref int 位置)
     {
         位置++;
         return 位置 < 引数List.Count ? 引数List[位置] : throw new ArgumentException($"{引数List[位置 - 1]} の後に値が無い");

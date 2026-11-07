@@ -45,6 +45,10 @@ var 画面 = 縦にスクロールする画面.From部品(
 dotnet build SengenWinUI3.sln --no-incremental
 ```
 
+## 設計
+
+層・公開する型の契約・部品の範囲・性能の測定の結果は [docs/設計.md](docs/設計.md) にある。
+
 ## 規約
 
 C# の規約は ONE.O.NET のものを使い、このリポジトリにはコピーを持たない。読む入口は `.claude/commands/rule.md` である。

@@ -51,7 +51,7 @@ window.Closed += (_, _) => 入れ物.Destroy();
 
 利用する側は SetContent(Node) で根を置き換え、Destroy() で根を破棄する。一時的な Unloaded では根を自動で破棄しない。利用する側は入れ物の Content を直接変更せず、この2つの操作を使う。生の型は完全修飾名か名前空間の別名で書き、SengenWinUI3 と同じ名前の型を衝突させない。
 
-WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHost と、Window を受ける WindowExtensions だけである。後の Popup.Open に渡す基準には、入れ物の中の文章のような Node を使える。Popup は基準が読み込み済みなら今開き、未読み込みなら内部で読み込みを待つ。同じ基準で Close と Open を何度でも行える契約である。
+WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHost と、Window を受ける WindowExtensions だけである。後の Popup.Open に渡す基準には、入れ物の中の文章のような Node を使える。Popup は基準が読み込み済みなら今開き、未読み込みなら内部で読み込みを待つ。同じ基準で Close と Open を何度でも行える契約である。Popup の位置は開いたときに1回だけ決まり、開いている間に基準が動いても付いていかない。
 
 ## 部品と更新
 
@@ -151,7 +151,7 @@ dotnet build SengenWinUI3.sln --no-incremental
 
 ## 設計と規約
 
-層・公開する型の契約・部品の範囲・性能の判断は [docs/設計.md](docs/設計.md) にある。C# の規約は ONE.O.NET のものを使い、読む入口は `.claude/commands/rule.md` である。
+層・公開する型の契約・部品の範囲・性能の判断は [docs/設計.md](docs/設計.md) にある。C# の規約を読む入口は `.claude/commands/rule.md` である。
 
 ## ライセンス
 

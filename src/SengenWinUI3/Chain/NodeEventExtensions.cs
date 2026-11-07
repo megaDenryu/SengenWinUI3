@@ -26,4 +26,8 @@ public static class NodeEventExtensions
     /// <summary>部品の上でボタンが離されたか、指やペンが離れたときに処理を呼ぶ。</summary>
     public static T OnPointerReleased<T>(this T node, Action<PointerInput> handler) where T : Node =>
         node.WireEvent(nameof(OnPointerReleased), NodeEvents.PointerReleased, 出来事 => handler(new PointerInput(出来事, node.Element)));
+
+    /// <summary>ポインターが部品の上で動いたときに処理を呼ぶ。捕まえている間は、部品の外で動いたときも呼ぶ。</summary>
+    public static T OnPointerMoved<T>(this T node, Action<PointerInput> handler) where T : Node =>
+        node.WireEvent(nameof(OnPointerMoved), NodeEvents.PointerMoved, 出来事 => handler(new PointerInput(出来事, node.Element)));
 }

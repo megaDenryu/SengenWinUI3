@@ -44,4 +44,19 @@ internal static class NodeEvents
         static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
         static (本物, ハンドラ) => 本物.PointerReleased += ハンドラ,
         static (本物, ハンドラ) => 本物.PointerReleased -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.PointerEventHandler, WinUI.Input.PointerRoutedEventArgs> PointerMoved = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.PointerMoved += ハンドラ,
+        static (本物, ハンドラ) => 本物.PointerMoved -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.RoutedEventHandler, EventArgs> GotFocus = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
+        static (本物, ハンドラ) => 本物.GotFocus += ハンドラ,
+        static (本物, ハンドラ) => 本物.GotFocus -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.RoutedEventHandler, EventArgs> LostFocus = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
+        static (本物, ハンドラ) => 本物.LostFocus += ハンドラ,
+        static (本物, ハンドラ) => 本物.LostFocus -= ハンドラ);
 }

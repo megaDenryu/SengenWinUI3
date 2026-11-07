@@ -21,6 +21,8 @@ public readonly struct PointerInput
         IsMiddleButtonPressed = 点.Properties.IsMiddleButtonPressed;
     }
 
+    internal WinUI.Input.Pointer Pointer => 元の出来事.Pointer;
+
     /// <summary>部品の左端からの横の位置。</summary>
     public Px X { get; }
 

@@ -3,7 +3,7 @@ using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>配置を変えずに、部品の根の位置と拡大率を繰り返し設定するチェーン。</summary>
+/// <summary>配置を変えずに、部品の根の位置・拡大率・回転を繰り返し設定するチェーン。</summary>
 public static class TransformExtensions
 {
     /// <summary>影の奥行きを保ち、配置位置からの横縦のずれを設定する。同じ値は設定し直さない。</summary>
@@ -28,6 +28,35 @@ public static class TransformExtensions
         if (本物.Scale != 拡大率)
         {
             本物.Scale = 拡大率;
+        }
+        return node;
+    }
+
+    /// <summary>回転の角度を設定する。回転の中心は <see cref="CenterPoint{T}"/> で決める。同じ値は設定し直さない。</summary>
+    public static T Rotation<T>(this T node, Degrees angle) where T : Node
+    {
+        node.ThrowIfDestroyed();
+        WinUI.FrameworkElement 本物 = node.Element;
+        float 角度 = float.CreateChecked(angle.Value);
+        if (本物.Rotation != 角度)
+        {
+            本物.Rotation = 角度;
+        }
+        return node;
+    }
+
+    /// <summary>
+    /// 回転と拡大の中心を、部品の左上からの横縦の長さで設定する。部品の真ん中にするには、大きさが決まった後に
+    /// <see cref="NodeEventExtensions.OnSizeChanged{T}"/> の中で幅と高さの半分を渡す。同じ値は設定し直さない。
+    /// </summary>
+    public static T CenterPoint<T>(this T node, Point center) where T : Node
+    {
+        node.ThrowIfDestroyed();
+        WinUI.FrameworkElement 本物 = node.Element;
+        Vector3 中心 = new(float.CreateChecked(center.X.Value), float.CreateChecked(center.Y.Value), 本物.CenterPoint.Z);
+        if (本物.CenterPoint != 中心)
+        {
+            本物.CenterPoint = 中心;
         }
         return node;
     }

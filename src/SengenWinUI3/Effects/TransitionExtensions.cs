@@ -28,4 +28,12 @@ public static class TransitionExtensions
         node.Element.ScaleTransition = new WinUI.Vector3Transition { Duration = duration };
         return node;
     }
+
+    /// <summary>回転の角度の変更にかかる時間を設定する。再設定できる。</summary>
+    public static T RotationTransition<T>(this T node, TimeSpan duration) where T : Node
+    {
+        node.ThrowIfDestroyed();
+        node.Element.RotationTransition = new WinUI.ScalarTransition { Duration = duration };
+        return node;
+    }
 }

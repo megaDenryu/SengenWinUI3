@@ -15,8 +15,8 @@ internal sealed class CellSubscriptionOnUiThread<TValue> : IDisposable
     {
         this.セル = セル;
         this.値を部品へ反映する = 値を部品へ反映する;
-        UiThreadRequest 反映の依頼 = new(UiThread.ForCurrentThread(), 今の値を反映する);
-        購読を解く札 = セル.Subscribe(反映の依頼.Request); // 注意: 購読してから今の値を読む。逆にすると、読んだ後で購読する前の変化を取りこぼす
+        UiThreadRequest 今の値を反映する依頼 = new(UiThread.ForCurrentThread(), 今の値を反映する);
+        購読を解く札 = セル.Subscribe(今の値を反映する依頼.Request); // 注意: 購読してから今の値を読む。逆にすると、読んだ後で購読する前の変化を取りこぼす
         try
         {
             今の値を反映する();

@@ -15,5 +15,5 @@ internal sealed class UiThread
         new(DispatcherQueue.GetForCurrentThread() ?? throw new InvalidOperationException("部品を作る操作とセルを結ぶ操作は、UI スレッドで行う"));
 
     // 注意: 待ち行列が閉じた後(ウインドウを閉じた後)は送れない。送る先の部品も無くなっているので、送れなかったことは捨てる。
-    internal void Post(DispatcherQueueHandler 処理) => _ = 送り先.TryEnqueue(処理);
+    internal void Post(DispatcherQueueHandler UIスレッドで呼ぶ) => _ = 送り先.TryEnqueue(UIスレッドで呼ぶ);
 }

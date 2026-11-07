@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 /// </summary>
 public abstract class FloatingNode : IChildOwner
 {
-    private Action? 付けた先から外す処理; // 付けたときだけある
+    private Action? 付けた先から外す; // 付けたときだけある
 
     private protected FloatingNode() { }
 
@@ -21,9 +21,9 @@ public abstract class FloatingNode : IChildOwner
         }
         IsDestroyed = true;
         CollectedExceptions 起きた例外 = new();
-        if (付けた先から外す処理 is { } 外す処理)
+        if (付けた先から外す is { } 外すとき呼ぶ)
         {
-            起きた例外.Run(外す処理);
+            起きた例外.Run(外すとき呼ぶ);
         }
         起きた例外.Run(OnDestroying);
         起きた例外.ThrowIfAny();
@@ -40,20 +40,20 @@ public abstract class FloatingNode : IChildOwner
     internal void ThrowIfAttached()
     {
         ThrowIfDestroyed();
-        if (付けた先から外す処理 is not null)
+        if (付けた先から外す is not null)
         {
             throw new InvalidOperationException($"{GetType().Name} はすでに別の部品に付けてある");
         }
     }
 
     // 付けた先の部品の破棄で一緒に破棄する。自分だけを破棄したときは、付けた先から外す。
-    internal void AttachTo(Node anchor, Action 付けた先から外す)
+    internal void AttachTo(Node anchor, Action 外すとき呼ぶ)
     {
         ThrowIfAttached();
         IDisposable 付けた先での後片付け = anchor.OwnRemovable(new CallOnDispose(Destroy));
-        付けた先から外す処理 = () =>
+        付けた先から外す = () =>
         {
-            付けた先から外す();
+            外すとき呼ぶ();
             付けた先での後片付け.Dispose();
         };
     }

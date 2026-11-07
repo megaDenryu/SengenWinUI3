@@ -3,7 +3,7 @@ using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>文字を見せる部品。固定の文字か、セルの文字を見せる。作る関数は <see cref="UI.TextBlock(string, Style?)"/>。</summary>
+/// <summary>文字を表示する部品。固定の文字か、セルの文字を表示する。作る関数は <see cref="UI.TextBlock(string, Style?)"/>。</summary>
 public sealed class TextBlock : Node
 {
     private static readonly StyleTarget<WinUI.Controls.TextBlock> 当て方 =
@@ -20,7 +20,7 @@ public sealed class TextBlock : Node
 
     internal override WinUI.FrameworkElement Element => 本物;
 
-    /// <summary>見せる文字を替える。セルに結んだ TextBlock へ呼ぶと、値の出どころが2つになるので例外を投げる。</summary>
+    /// <summary>表示する文字を替える。セルに結んだ TextBlock へ呼ぶと、値の出どころが2つになるので例外を投げる。</summary>
     public TextBlock SetText(string text)
     {
         ThrowIfDestroyed();

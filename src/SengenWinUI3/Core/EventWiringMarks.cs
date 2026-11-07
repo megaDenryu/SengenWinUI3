@@ -13,4 +13,6 @@ internal sealed class EventWiringMarks
         }
         (受けた出来事List ??= []).Add(出来事の名前);
     }
+
+    internal void Unmark(string 出来事の名前) => _ = 受けた出来事List?.Remove(出来事の名前);
 }

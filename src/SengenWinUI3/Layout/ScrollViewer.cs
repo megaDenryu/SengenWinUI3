@@ -8,13 +8,13 @@ public sealed class ScrollViewer : Node, IControlNode
     private const double 末尾とみなす残り = 1; // 拡大率による端数で、末尾にいても残りが 0 にならないことがある
 
     private readonly WinUI.Controls.ScrollViewer 本物 = new();
-    private readonly ContentSlot 中身の置き場;
+    private readonly ContentSlot 中身置き場;
     private bool 末尾にいるか = true;
 
     internal ScrollViewer(Node content)
     {
-        中身の置き場 = new ContentSlot(this, 中身の本物 => 本物.Content = 中身の本物);
-        中身の置き場.SetContent(content);
+        中身置き場 = new ContentSlot(this, 中身の本物 => 本物.Content = 中身の本物);
+        中身置き場.SetContent(content);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -25,7 +25,7 @@ public sealed class ScrollViewer : Node, IControlNode
     public ScrollViewer SetContent(Node content)
     {
         ThrowIfDestroyed();
-        中身の置き場.SetContent(content);
+        中身置き場.SetContent(content);
         return this;
     }
 
@@ -40,30 +40,30 @@ public sealed class ScrollViewer : Node, IControlNode
     /// <summary>末尾にいる間に中身が伸びたら、末尾へ付いていく。利用者が上へスクロールしている間は付いていかない。2回目は例外を投げる。</summary>
     public ScrollViewer StickToEnd()
     {
-        EventHandler<WinUI.Controls.ScrollViewerViewChangedEventArgs> 位置が変わったときの処理 = (_, _) =>
+        EventHandler<WinUI.Controls.ScrollViewerViewChangedEventArgs> 位置が変わったら末尾にいるかを見直す = (_, _) =>
         {
             if (!IsDestroyed) 末尾にいるか = 本物.ScrollableHeight - 本物.VerticalOffset <= 末尾とみなす残り;
         };
-        WinUI.DependencyPropertyChangedCallback 中身の高さが変わったときの処理 = (_, _) => 末尾へ付いていく();
-        long 高さの購読の札 = 0;
+        WinUI.DependencyPropertyChangedCallback 中身の高さが変わったら末尾へ付いていく = (_, _) => 末尾へ付いていく();
+        long 高さを購読した番号 = 0;
         WireEvent(
             nameof(StickToEnd),
             () =>
             {
-                本物.ViewChanged += 位置が変わったときの処理;
-                高さの購読の札 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 中身の高さが変わったときの処理);
+                本物.ViewChanged += 位置が変わったら末尾にいるかを見直す;
+                高さを購読した番号 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 中身の高さが変わったら末尾へ付いていく);
             },
             () =>
             {
-                本物.ViewChanged -= 位置が変わったときの処理;
-                本物.UnregisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 高さの購読の札);
+                本物.ViewChanged -= 位置が変わったら末尾にいるかを見直す;
+                本物.UnregisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 高さを購読した番号);
             });
         return this;
     }
 
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    internal override void RemoveChildElement(Node child) => 中身の置き場.Release(child);
+    internal override void RemoveChildElement(Node child) => 中身置き場.Release(child);
 
     private void 末尾へ付いていく()
     {

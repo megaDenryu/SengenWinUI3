@@ -5,11 +5,11 @@ internal sealed class CollectedExceptions
 {
     private List<Exception>? 起きた例外List;
 
-    internal void Run(Action 後片付けの処理)
+    internal void Run(Action 後片付けをする)
     {
         try
         {
-            後片付けの処理();
+            後片付けをする();
         }
         catch (Exception 例外)
         {

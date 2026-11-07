@@ -44,8 +44,7 @@ public static class ChildrenExtensions
     /// <summary>子を全部破棄する。子の本物はまとめて外す。</summary>
     public static T DestroyChildren<T>(this T parent) where T : Node, IHasChildren
     {
-        parent.DestroyAllChildren();
-        parent.ChildPanel.Children.Clear();
+        parent.DestroyAllChildren(parent.ChildPanel.Children.Clear);
         return parent;
     }
 }

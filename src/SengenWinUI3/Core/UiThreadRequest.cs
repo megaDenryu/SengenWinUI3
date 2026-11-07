@@ -7,33 +7,33 @@ namespace SengenWinUI3;
 internal sealed class UiThreadRequest
 {
     private readonly UiThread UIスレッド;
-    private readonly Action 処理;
-    private readonly DispatcherQueueHandler 送った先の処理;
+    private readonly Action UIスレッドで呼ぶ;
+    private readonly DispatcherQueueHandler 送った先で呼ぶ;
     private int 送り待ち; // 1 なら待ち行列へ積んで、まだ呼んでいない
 
-    internal UiThreadRequest(UiThread UIスレッド, Action 処理)
+    internal UiThreadRequest(UiThread UIスレッド, Action UIスレッドで呼ぶ)
     {
         this.UIスレッド = UIスレッド;
-        this.処理 = 処理;
-        送った先の処理 = 送った先で呼ぶ;
+        this.UIスレッドで呼ぶ = UIスレッドで呼ぶ;
+        送った先で呼ぶ = 送った先で依頼を呼ぶ;
     }
 
     internal void Request()
     {
         if (UIスレッド.IsCurrent)
         {
-            処理();
+            UIスレッドで呼ぶ();
             return;
         }
         if (Interlocked.Exchange(ref 送り待ち, 1) == 0)
         {
-            UIスレッド.Post(送った先の処理);
+            UIスレッド.Post(送った先で呼ぶ);
         }
     }
 
-    private void 送った先で呼ぶ()
+    private void 送った先で依頼を呼ぶ()
     {
         Volatile.Write(ref 送り待ち, 0);
-        処理();
+        UIスレッドで呼ぶ();
     }
 }

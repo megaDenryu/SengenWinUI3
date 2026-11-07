@@ -6,13 +6,13 @@ namespace SengenWinUI3;
 public sealed class Button : Node, IClickable, IControlNode
 {
     private readonly WinUI.Controls.Button 本物 = new();
-    private readonly ContentSlot 中身の置き場;
+    private readonly ContentSlot 中身置き場;
 
     internal Button(string text) : this() => 本物.Content = text;
 
-    internal Button(Node content) : this() => 中身の置き場.SetContent(content);
+    internal Button(Node content) : this() => 中身置き場.SetContent(content);
 
-    private Button() => 中身の置き場 = new ContentSlot(this, 中身の本物 => 本物.Content = 中身の本物);
+    private Button() => 中身置き場 = new ContentSlot(this, 中身の本物 => 本物.Content = 中身の本物);
 
     internal override WinUI.FrameworkElement Element => 本物;
 
@@ -22,18 +22,18 @@ public sealed class Button : Node, IClickable, IControlNode
     public Button SetContent(Node content)
     {
         ThrowIfDestroyed();
-        中身の置き場.SetContent(content);
+        中身置き場.SetContent(content);
         return this;
     }
 
     /// <summary>押されたときに処理を呼ぶ。2回目は例外を投げる。</summary>
     public Button OnClick(Action handler)
     {
-        WinUI.RoutedEventHandler 出来事の処理 = (_, _) =>
+        WinUI.RoutedEventHandler 出来事が起きたら呼ぶ = (_, _) =>
         {
             if (!IsDestroyed) handler();
         };
-        WireEvent(nameof(OnClick), () => 本物.Click += 出来事の処理, () => 本物.Click -= 出来事の処理);
+        WireEvent(nameof(OnClick), () => 本物.Click += 出来事が起きたら呼ぶ, () => 本物.Click -= 出来事が起きたら呼ぶ);
         return this;
     }
 
@@ -43,5 +43,5 @@ public sealed class Button : Node, IClickable, IControlNode
 
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    internal override void RemoveChildElement(Node child) => 中身の置き場.Release(child);
+    internal override void RemoveChildElement(Node child) => 中身置き場.Release(child);
 }

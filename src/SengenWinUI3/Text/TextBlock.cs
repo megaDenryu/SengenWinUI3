@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 public sealed class TextBlock : Node
 {
     private static readonly StyleTarget<WinUI.Controls.TextBlock> 当て方 =
-        new(FrameworkElementStyle.Layout, TextBlockStyle.Padding, TextBlockStyle.Font, TextBlockStyle.Text);
+        new(FrameworkElementStyle.Layout, TextBlockStyle.Padding, TextBlockStyle.Font, TextBlockStyle.Text, TextBlockStyle.Alignment);
 
     private readonly WinUI.Controls.TextBlock 本物 = new();
     private readonly ElementValue<WinUI.Controls.TextBlock, string> 文字;

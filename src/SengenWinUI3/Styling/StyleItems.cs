@@ -37,4 +37,6 @@ internal enum StyleItems : long
     StrokeThickness = 1L << 29,
     StrokeLineCap = 1L << 30,
     StrokeLineJoin = 1L << 31,
+    TextAlignment = 1L << 32,
+    TextTrimming = 1L << 33,
 }

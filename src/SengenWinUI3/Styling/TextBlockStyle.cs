@@ -29,4 +29,12 @@ internal static class TextBlockStyle
             if (見た目.TextWrapping is { } 折り返し方) 本物.TextWrapping = 折り返し方.ToWinUI();
             if (見た目.IsTextSelectionEnabled is { } 選べるか) 本物.IsTextSelectionEnabled = 選べるか;
         });
+
+    internal static readonly IStyleGroup<WinUI.Controls.TextBlock> Alignment = new StyleGroup<WinUI.Controls.TextBlock>(
+        StyleItems.TextAlignment | StyleItems.TextTrimming,
+        static (見た目, 本物) =>
+        {
+            if (見た目.TextAlignment is { } 寄せ方) 本物.TextAlignment = 寄せ方.ToWinUI();
+            if (見た目.TextTrimming is { } 切り詰め方) 本物.TextTrimming = 切り詰め方.ToWinUI();
+        });
 }

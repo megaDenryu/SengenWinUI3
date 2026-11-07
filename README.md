@@ -63,13 +63,40 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource` |
 | `ScrollViewer` | `ScrollViewer(content, style)`・`SetContent`・`ScrollToEnd`・`StickToEnd` |
 | `VirtualList<TItem, TRow>` | `VirtualList<TItem, TRow>(createRow, style)`・`SetItems`・`ReplaceItem` など |
-| `Flyout` | `Flyout(content)` を `button.Flyout(flyout)` で付ける |
+| `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `Border` | `Border(content, style)`・`SetContent` |
+| `Canvas` | `Canvas(style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`OnTextChanged` |
+| `PasswordBox` | `PasswordBox(password, placeholderText, style)`・`SetPassword`・`OnPasswordChanged` |
+| `NumberBox` | `NumberBox(value, minimum, maximum, style)`・`SetValue`・`OnValueChanged` |
+| `Slider` | `Slider(value, minimum, maximum, stepFrequency, style)`・`SetValue`・`OnValueChanged` |
+| `CheckBox` | `CheckBox(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged` |
+| `ToggleButton` | `ToggleButton(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged` |
+| `ToggleSwitch` | `ToggleSwitch(isOn, header, style)`・`SetIsOn`・`OnToggled` |
+| `HyperlinkButton` | `HyperlinkButton(content, style)` または `HyperlinkButton(content, navigateUri, style)`・`SetContent`・`OnClick` |
+| `ListView` | `ListView(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged`。`children` は `Node?[]` で受ける |
+| `ComboBox` | `ComboBox(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged` |
+| `RadioButtons` | `RadioButtons(children, selectedIndex, style)`・`SetSelectedIndex`・`OnSelectionChanged` |
+| `FontIcon` | `FontIcon(glyph, style)`・`SetGlyph` |
+| `SymbolIcon` | `SymbolIcon(symbol, style)`・`SetSymbol` |
+| `ProgressBar` | `ProgressBar(progress, style)`・`SetProgress` |
+| `ProgressRing` | `ProgressRing(isActive, progress, style)`・`SetProgress`・`SetIsActive` |
+| `Rectangle`・`Ellipse` | `Rectangle(style)`・`Ellipse(style)`。固有の操作は無い |
+| `Line` | `Line(x1, y1, x2, y2, style)`・`SetX1`・`SetY1`・`SetX2`・`SetY2` |
+| `CalendarDatePicker` | `CalendarDatePicker(date, style)`・`SetDate`・`OnDateChanged` |
+| `ColorPicker` | `ColorPicker(color, style)`・`SetColor`・`OnColorChanged` |
+| `Popup` | `Popup(content, horizontalOffset, verticalOffset, isLightDismissEnabled)`・`Open(anchor)`・`Close`・`SetContent` |
+| `ContentDialog` | `ContentDialog(title, content, primaryButtonText, secondaryButtonText, closeButtonText)`・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
+| `Flyout` | `Flyout(content)` か `MenuFlyout(...)` を `button.Flyout(...)` で付ける |
+| `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
 | `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |
 | `NodeHost` | `new NodeHost(content)`・`Element`・`SetContent`・`Destroy`。生の木へ置く入れ物 |
 
 作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
 
-後の作業で `Grid`・`Border`・`Canvas`、入力と選択の部品、`ListView`、`Popup`・`MenuFlyout`・`ContentDialog`、`FontIcon`・`SymbolIcon`、図形・動きと影を足す。部品の範囲と契約は [設計文書](docs/設計.md) にある。
+チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`Translation(x, y)`・`Scale(x, y)` で付ける。
+
+部品の範囲と契約は [設計文書](docs/設計.md) にある。
 
 ## 見た目
 
@@ -80,7 +107,16 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `StackPanel` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・Orientation・Spacing |
 | `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled |
 | `Button`・`ScrollViewer` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `Grid` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・RowSpacing・ColumnSpacing |
+| `Border` | Padding・Background・BorderBrush・BorderThickness・CornerRadius |
+| `Canvas` | Background |
+| `ListView`・`ComboBox`・`RadioButtons`・`TextBox`・`PasswordBox`・`NumberBox`・`Slider`・`CheckBox`・`ToggleButton`・`ToggleSwitch`・`HyperlinkButton`・`ProgressBar`・`ProgressRing`・`CalendarDatePicker`・`ColorPicker` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `FontIcon` | Foreground・FontSize・FontWeight・FontFamily |
+| `SymbolIcon` | Foreground。大きさは Width・Height で指定する |
+| `Rectangle`・`Ellipse`・`Line` | Fill・Stroke・StrokeThickness |
 | `Image`・`VirtualList` | 共通の項目のみ |
+
+浮かぶ部品の `Popup`・`ContentDialog`・`MenuFlyout` は Style を受けない。`Popup` の中身の部品には Style を当てられる。
 
 長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
 

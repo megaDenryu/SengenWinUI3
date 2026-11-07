@@ -34,6 +34,15 @@ public sealed class TextBox : Node, IControlNode
         return this;
     }
 
+    /// <summary>ふだん・重ねた・フォーカス・押せないの状態ごとの色を設定する。木へ入れる前に呼ぶ。読み込まれた後に呼ぶと例外を投げる。</summary>
+    public TextBox SetColors(TextBoxColors colors)
+    {
+        ThrowIfDestroyed();
+        LightweightResources.ThrowIfLoaded(本物, this);
+        colors.WriteTo(本物);
+        return this;
+    }
+
     /// <summary>利用者の変更を通知する。最後の設定値へ戻した場合は通知しない。2回目の登録は例外になる。</summary>
     public TextBox OnTextChanged(Action<string> handler) =>
         this.WireEvent(nameof(OnTextChanged), 本物, 変更の出来事, () => 利用者の変更を知らせる(handler));

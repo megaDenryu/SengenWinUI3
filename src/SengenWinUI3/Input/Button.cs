@@ -31,6 +31,15 @@ public sealed class Button : Node, IClickable, IControlNode, IContentOwner
         return this;
     }
 
+    /// <summary>ふだん・重ねた・押した・押せないの状態ごとの色を設定する。木へ入れる前に呼ぶ。読み込まれた後に呼ぶと例外を投げる。</summary>
+    public Button SetColors(ButtonColors colors)
+    {
+        ThrowIfDestroyed();
+        LightweightResources.ThrowIfLoaded(本物, this);
+        colors.WriteTo(本物, "Button", "");
+        return this;
+    }
+
     /// <summary>押されたときに処理を呼ぶ。2回目は例外を投げる。</summary>
     public Button OnClick(Action handler) => this.WireEvent(nameof(OnClick), 本物, 押された出来事, handler);
 

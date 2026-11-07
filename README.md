@@ -82,11 +82,11 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `ProgressBar` | `ProgressBar(progress, style)`・`SetProgress` |
 | `ProgressRing` | `ProgressRing(isActive, progress, style)`・`SetProgress`・`SetIsActive` |
 | `Rectangle`・`Ellipse` | `Rectangle(style)`・`Ellipse(style)`。固有の操作は無い |
-| `Line` | `Line(x1, y1, x2, y2, style)`・`SetX1`・`SetY1`・`SetX2`・`SetY2` |
+| `Line` | `Line(start, end, style)`・`SetStart`・`SetEnd`(`start` と `end` は `Point`) |
 | `CalendarDatePicker` | `CalendarDatePicker(date, style)`・`SetDate`・`OnDateChanged` |
 | `ColorPicker` | `ColorPicker(color, style)`・`SetColor`・`OnColorChanged` |
-| `Popup` | `Popup(content, horizontalOffset, verticalOffset, isLightDismissEnabled)`・`Open(anchor)`・`Close`・`SetContent` |
-| `ContentDialog` | `ContentDialog(title, content, primaryButtonText, secondaryButtonText, closeButtonText)`・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
+| `Popup` | `Popup(content, offset, isLightDismissEnabled)`(`offset` は `Point`)・`Open(anchor)`・`Close`・`SetContent` |
+| `ContentDialog` | `ContentDialog(title, content, buttons)`(`buttons` は `ContentDialogButtons` で、`Primary`・`Secondary`・`Close` を名前付きで渡す)・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
 | `Flyout` | `Flyout(content)` か `MenuFlyout(...)` を `button.Flyout(...)` で付ける |
 | `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
 | `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |
@@ -94,7 +94,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 
 作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
 
-チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`Translation(x, y)`・`Scale(x, y)` で付ける。
+チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)` で付ける。
 
 部品の範囲と契約は [設計文書](docs/設計.md) にある。
 
@@ -118,7 +118,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 
 浮かぶ部品の `Popup`・`ContentDialog`・`MenuFlyout` は Style を受けない。`Popup` の中身の部品には Style を当てられる。
 
-長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
+長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。横と縦の2つの長さの組は `Point` の値で渡す(`new Point(0.Px, 40.Px)`)。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
 
 ## 寿命と出来事
 

@@ -10,6 +10,15 @@ public static class WindowExtensions
     private static readonly ConditionalWeakTable<WinUI.Window, WindowHost> ウインドウの持ち主Map = new();
 
     /// <summary>根の部品をウインドウに置く。ウインドウが閉じたら根を破棄する。2回目は前の根を破棄して置き換える。親を持つ部品を渡すと例外を投げる。</summary>
-    public static void SetContent(this WinUI.Window window, Node content) =>
-        ウインドウの持ち主Map.GetValue(window, static ウインドウ => new WindowHost(ウインドウ)).SetRoot(content);
+    public static void SetContent(this WinUI.Window window, Node content) => 持ち主を得る(window).SetRoot(content);
+
+    /// <summary>ウインドウにトースト置き場を付ける。1つのウインドウに1つだけ付けられ、2回目は例外を投げる。UI スレッドで呼ぶ。ウインドウが閉じたら置き場も片付く。</summary>
+    public static ToastHost AttachToastHost(this WinUI.Window window, ToastHostSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        return 持ち主を得る(window).AttachToastHost(settings);
+    }
+
+    private static WindowHost 持ち主を得る(WinUI.Window window) =>
+        ウインドウの持ち主Map.GetValue(window, static ウインドウ => new WindowHost(ウインドウ));
 }

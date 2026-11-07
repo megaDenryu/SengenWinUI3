@@ -34,7 +34,7 @@ public sealed class Button : Node, IClickable, IControlNode, IContentOwner
     /// <summary>押されたときに処理を呼ぶ。2回目は例外を投げる。</summary>
     public Button OnClick(Action handler) => this.WireEvent(nameof(OnClick), 本物, 押された出来事, handler);
 
-    void IClickable.AttachFlyout(Flyout flyout) => 本物.Flyout = flyout.Element;
+    void IClickable.AttachFlyout(WinUI.Controls.Primitives.FlyoutBase flyout) => 本物.Flyout = flyout;
 
     void IClickable.DetachFlyout() => 本物.Flyout = null;
 

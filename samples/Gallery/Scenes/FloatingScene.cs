@@ -31,6 +31,8 @@ internal sealed class FloatingScene : Scene
             new MenuFlyoutAction("最初の項目", () => Run.Report("最初の項目を押した")),
             new MenuFlyoutSeparator(),
             new MenuFlyoutAction("次の項目", () => Run.Report("次の項目を押した")))),
+        Button("押すとメニューが開く").Flyout(MenuFlyout(
+            new MenuFlyoutAction("押して開いたメニューの項目", () => Run.Report("押して開いたメニューの項目を押した")))),
         TextBlock("この説明にポインターを重ねる").ToolTip("文字だけの説明"));
 
     private void ポップアップを開く()

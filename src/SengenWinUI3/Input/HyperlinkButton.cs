@@ -36,7 +36,7 @@ public sealed class HyperlinkButton : Node, IClickable, IControlNode
     /// <summary>押されたときの処理を登録する。2回目の登録は例外になる。</summary>
     public HyperlinkButton OnClick(Action handler) => this.WireEvent(nameof(OnClick), 本物, 押された出来事, handler);
 
-    void IClickable.AttachFlyout(Flyout flyout) => WinUI.Controls.Primitives.FlyoutBase.SetAttachedFlyout(本物, flyout.Element);
+    void IClickable.AttachFlyout(WinUI.Controls.Primitives.FlyoutBase flyout) => WinUI.Controls.Primitives.FlyoutBase.SetAttachedFlyout(本物, flyout);
     void IClickable.DetachFlyout() => WinUI.Controls.Primitives.FlyoutBase.SetAttachedFlyout(本物, null);
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
     private void 付けた画面を開く()

@@ -16,5 +16,5 @@ internal static class RectangleStyle
             }
         });
 
-    internal static readonly StyleTarget<WinUI.Shapes.Rectangle> All = new(FrameworkElementStyle.Layout, ShapeStyle.Paint, Corners);
+    internal static readonly StyleTarget<WinUI.Shapes.Rectangle> All = new(FrameworkElementStyle.Layout, ShapeStyle.Paint, ShapeStyle.StrokeForm, Corners);
 }

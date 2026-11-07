@@ -13,5 +13,17 @@ internal static class ShapeStyle
             if (見た目.StrokeThickness is { } 太さ) 本物.StrokeThickness = 太さ.Value;
         });
 
-    internal static readonly StyleTarget<WinUI.Shapes.Shape> All = new(FrameworkElementStyle.Layout, Paint);
+    internal static readonly IStyleGroup<WinUI.Shapes.Shape> StrokeForm = new StyleGroup<WinUI.Shapes.Shape>(
+        StyleItems.StrokeLineCap | StyleItems.StrokeLineJoin,
+        static (見た目, 本物) =>
+        {
+            if (見た目.StrokeLineCap is { } 端)
+            {
+                本物.StrokeStartLineCap = 端.ToWinUI();
+                本物.StrokeEndLineCap = 端.ToWinUI();
+            }
+            if (見た目.StrokeLineJoin is { } 角) 本物.StrokeLineJoin = 角.ToWinUI();
+        });
+
+    internal static readonly StyleTarget<WinUI.Shapes.Shape> All = new(FrameworkElementStyle.Layout, Paint, StrokeForm);
 }

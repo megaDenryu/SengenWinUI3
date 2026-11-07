@@ -76,6 +76,10 @@ public sealed class Style
     public Brush? Stroke { get; init; }
     /// <summary>図形の輪郭の太さ。</summary>
     public Px? StrokeThickness { get; init; }
+    /// <summary>図形の輪郭の線の端の形。始点と終点の両方に当てる。</summary>
+    public PenLineCap? StrokeLineCap { get; init; }
+    /// <summary>図形の輪郭の線が折れる角の形。</summary>
+    public PenLineJoin? StrokeLineJoin { get; init; }
 
     /// <summary>この Style に、<paramref name="overlay"/> の null でない項目を上書きした新しい Style を返す。</summary>
     public Style With(Style overlay) => new()
@@ -110,6 +114,8 @@ public sealed class Style
         Fill = overlay.Fill ?? Fill,
         Stroke = overlay.Stroke ?? Stroke,
         StrokeThickness = overlay.StrokeThickness ?? StrokeThickness,
+        StrokeLineCap = overlay.StrokeLineCap ?? StrokeLineCap,
+        StrokeLineJoin = overlay.StrokeLineJoin ?? StrokeLineJoin,
     };
 
     internal WinUI.Media.Brush? CachedBackground() => Background is { } 塗り ? 背景のブラシ ??= 塗り.ToWinUI() : null;
@@ -164,5 +170,7 @@ public sealed class Style
         | (FontFamily is null ? StyleItems.None : StyleItems.FontFamily)
         | (Fill is null ? StyleItems.None : StyleItems.Fill)
         | (Stroke is null ? StyleItems.None : StyleItems.Stroke)
-        | (StrokeThickness is null ? StyleItems.None : StyleItems.StrokeThickness);
+        | (StrokeThickness is null ? StyleItems.None : StyleItems.StrokeThickness)
+        | (StrokeLineCap is null ? StyleItems.None : StyleItems.StrokeLineCap)
+        | (StrokeLineJoin is null ? StyleItems.None : StyleItems.StrokeLineJoin);
 }

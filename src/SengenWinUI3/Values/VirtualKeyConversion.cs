@@ -2,7 +2,7 @@ using Windows.System;
 
 namespace SengenWinUI3;
 
-// 注意: 範囲で変える4つの組は、Key と VirtualKey の両方で途切れず同じ順に並んでいることに頼る。Key の並びを変えるときは、この組を崩さない。
+// 注意: 範囲で変える4つの組は、Key と VirtualKey の両方で途切れず同じ順に並んでいることに頼る。Key の順序を変えるときは、この組を崩さない。
 internal static class VirtualKeyConversion
 {
     internal static Key ToKey(this VirtualKey キー) => キー switch

@@ -19,11 +19,11 @@ internal sealed class InputScene : Scene
     {
         文字入力.OnTextChanged(文字 => Run.Report($"TextBox: {文字}"));
         パスワード入力.OnPasswordChanged(文字 => Run.Report($"PasswordBox: {文字.Length} 文字"));
-        数値入力.OnValueChanged(値 => Run.Report($"NumberBox: {値}"));
-        スライダー.OnValueChanged(値 => Run.Report($"Slider: {値}"));
-        チェック欄.OnCheckedChanged(値 => Run.Report($"CheckBox: {値}"));
-        切り替えボタン.OnCheckedChanged(値 => Run.Report($"ToggleButton: {値}"));
-        スイッチ.OnToggled(値 => Run.Report($"ToggleSwitch: {値}"));
+        数値入力.OnValueChanged(変わった後の数値 => Run.Report($"NumberBox: {変わった後の数値}"));
+        スライダー.OnValueChanged(変わった後の数値 => Run.Report($"Slider: {変わった後の数値}"));
+        チェック欄.OnCheckedChanged(変わった後の状態 => Run.Report($"CheckBox: {変わった後の状態}"));
+        切り替えボタン.OnCheckedChanged(変わった後の状態 => Run.Report($"ToggleButton: {変わった後の状態}"));
+        スイッチ.OnToggled(変わった後の状態 => Run.Report($"ToggleSwitch: {変わった後の状態}"));
     }
 
     protected override Node Build() => ScrollViewer(StackPanel(画面の見た目).Children(

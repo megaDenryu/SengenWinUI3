@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 public sealed class NumberBox : Node, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.NumberBox, Windows.Foundation.TypedEventHandler<WinUI.Controls.NumberBox, WinUI.Controls.NumberBoxValueChangedEventArgs>, EventArgs> 変更の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.ValueChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.ValueChanged -= ハンドラ);
 
@@ -17,11 +17,9 @@ public sealed class NumberBox : Node, IControlNode
     {
         本物.Minimum = minimum;
         本物.Maximum = maximum;
-        ElementValue<WinUI.Controls.NumberBox, double> 設定先 = new(本物,
+        数値 = InputValue.Create(本物, Math.Clamp(value, 本物.Minimum, 本物.Maximum),
             static (本物, 値) => (本物.Value).Equals(値),
             static (本物, 値) => 本物.Value = 値);
-        数値 = new(本物.Value, 設定先.Set);
-        数値.Set(Math.Clamp(value, 本物.Minimum, 本物.Maximum));
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -44,7 +42,7 @@ public sealed class NumberBox : Node, IControlNode
 
     private void 利用者の変更を知らせる(Action<double> 呼ぶ)
     {
-        double 現在値 = 本物.Value;
-        if (数値.IsUserChange(現在値)) 呼ぶ(現在値);
+        double 今の数値 = 本物.Value;
+        if (数値.IsUserChange(今の数値)) 呼ぶ(今の数値);
     }
 }

@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 public sealed class PasswordBox : Node, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.PasswordBox, WinUI.RoutedEventHandler, EventArgs> 変更の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.PasswordChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.PasswordChanged -= ハンドラ);
 
@@ -16,11 +16,9 @@ public sealed class PasswordBox : Node, IControlNode
     internal PasswordBox(string password, string placeholderText)
     {
         本物.PlaceholderText = placeholderText;
-        ElementValue<WinUI.Controls.PasswordBox, string> 設定先 = new(本物,
+        文字 = InputValue.Create(本物, password,
             static (本物, 値) => string.Equals(本物.Password, 値, StringComparison.Ordinal),
             static (本物, 値) => 本物.Password = 値);
-        文字 = new(password, 設定先.Set);
-        文字.Set(password);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -42,7 +40,7 @@ public sealed class PasswordBox : Node, IControlNode
 
     private void 利用者の変更を知らせる(Action<string> 呼ぶ)
     {
-        string 現在値 = 本物.Password;
-        if (文字.IsUserChange(現在値)) 呼ぶ(現在値);
+        string 今の文字 = 本物.Password;
+        if (文字.IsUserChange(今の文字)) 呼ぶ(今の文字);
     }
 }

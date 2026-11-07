@@ -20,7 +20,7 @@ internal sealed class DisplayScene : Scene
     private readonly SymbolIcon 記号 = SymbolIcon(Symbol.Add, 記号の見た目);
     private readonly ProgressBar 棒 = ProgressBar(new DeterminateProgress(new Ratio(0.25)), 棒の見た目);
     private readonly ProgressRing リング = ProgressRing(true, new IndeterminateProgress(), リングの見た目);
-    private readonly Line 線 = Line(4.Px, 4.Px, 96.Px, 36.Px, 線の見た目);
+    private readonly Line 線 = Line(new Point(4.Px, 4.Px), new Point(96.Px, 36.Px), 線の見た目);
     private readonly CalendarDatePicker 日付 = CalendarDatePicker(new NoDate());
     private readonly ColorPicker 色 = ColorPicker(初期の色);
 
@@ -51,7 +51,7 @@ internal sealed class DisplayScene : Scene
     {
         字形.SetGlyph("\uE711");
         記号.SetSymbol(Symbol.Accept);
-        線.SetX1(4.Px).SetY1(36.Px).SetX2(96.Px).SetY2(4.Px);
+        線.SetStart(new Point(4.Px, 36.Px)).SetEnd(new Point(96.Px, 4.Px));
         Run.Report("字形・記号・線の座標を設定した");
     }
 

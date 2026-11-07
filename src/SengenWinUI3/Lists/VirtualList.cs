@@ -18,7 +18,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     private readonly Dictionary<WinUI.UIElement, TRow> 作った行Map = [];
     private readonly HashSet<TRow> 項目を見せている行Set = [];
     private readonly Stack<TRow> 使い回しを待つ行List = new();
-    private ObservableCollection<項目の箱> 項目List = [];
+    private ObservableCollection<渡す項目> 項目List = [];
 
     internal VirtualList(Func<TRow> createRow)
     {
@@ -33,8 +33,8 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     public VirtualList<TItem, TRow> SetItems(IReadOnlyList<TItem> items)
     {
         ThrowIfDestroyed();
-        項目List = new ObservableCollection<項目の箱>(items.Select(static 項目 => new 項目の箱(項目)));
-        本物.ItemsSource = 項目List; // 注意: 1件ずつ足すと件数の回だけ ItemsRepeater へ知らせが飛ぶので、並びごと差し替える
+        項目List = new ObservableCollection<渡す項目>(items.Select(static 項目 => new 渡す項目(項目)));
+        本物.ItemsSource = 項目List; // 注意: 1件ずつ足すと件数の回だけ ItemsRepeater へ知らせが飛ぶので、項目List 全体を差し替える
         return this;
     }
 
@@ -42,7 +42,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     public VirtualList<TItem, TRow> AddItem(TItem item)
     {
         ThrowIfDestroyed();
-        項目List.Add(new 項目の箱(item));
+        項目List.Add(new 渡す項目(item));
         return this;
     }
 
@@ -50,7 +50,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     public VirtualList<TItem, TRow> InsertItem(int index, TItem item)
     {
         ThrowIfDestroyed();
-        項目List.Insert(index, new 項目の箱(item));
+        項目List.Insert(index, new 渡す項目(item));
         return this;
     }
 
@@ -58,7 +58,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     public VirtualList<TItem, TRow> ReplaceItem(int index, TItem item)
     {
         ThrowIfDestroyed();
-        項目List[index] = new 項目の箱(item);
+        項目List[index] = new 渡す項目(item);
         return this;
     }
 
@@ -79,24 +79,24 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     // 子孫(行)の破棄の前に、項目を見せている行を項目から離す。待っている行は離れてある。
     internal override void OnDestroying()
     {
-        CollectedExceptions 起きた例外 = new();
+        CollectedExceptions 集めた例外 = new();
         foreach (TRow 行 in 項目を見せている行Set)
         {
-            起きた例外.Run(行.Release);
+            集めた例外.Run(行.Release);
         }
         項目を見せている行Set.Clear();
-        起きた例外.ThrowIfAny();
+        集めた例外.ThrowIfAny();
     }
 
     private WinUI.FrameworkElement 項目を見せる行を用意する(object 項目のデータ)
     {
         ThrowIfDestroyed();
-        if (項目のデータ is not 項目の箱 箱)
+        if (項目のデータ is not 渡す項目 渡す項目の値)
         {
-            throw new InvalidOperationException($"{GetType().Name} の ItemsRepeater が、一覧の入れていない項目の行を求めた");
+            throw new InvalidOperationException($"{GetType().Name} の ItemsRepeater から、VirtualList に入っていない項目の行を求められた");
         }
         TRow 行 = 使い回しを待つ行List.TryPop(out TRow? 待っていた行) ? 待っていた行 : 行を新しく作る();
-        行.Show(箱.項目);
+        行.Show(渡す項目の値.項目);
         _ = 項目を見せている行Set.Add(行);
         return 行.Element;
     }
@@ -119,7 +119,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRec
     }
 
     // 項目を WinRT の境目へ渡す箱。項目が構造体でも、境目を値のまま越えずに済ませる(設計の文書の判断9)。
-    private sealed class 項目の箱(TItem 項目)
+    private sealed class 渡す項目(TItem 項目)
     {
         internal TItem 項目 { get; } = 項目;
     }

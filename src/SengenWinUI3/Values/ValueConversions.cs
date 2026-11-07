@@ -51,4 +51,24 @@ internal static class ValueConversions
         FontWeight.Black => Microsoft.UI.Text.FontWeights.Black,
         _ => throw new ArgumentOutOfRangeException(nameof(太さ), 太さ, null),
     };
+
+    internal static WinUI.Controls.Symbol ToWinUI(this Symbol 記号) => 記号 switch
+    {
+        Symbol.Add => WinUI.Controls.Symbol.Add,
+        Symbol.Remove => WinUI.Controls.Symbol.Remove,
+        Symbol.Delete => WinUI.Controls.Symbol.Delete,
+        Symbol.Edit => WinUI.Controls.Symbol.Edit,
+        Symbol.Save => WinUI.Controls.Symbol.Save,
+        Symbol.Accept => WinUI.Controls.Symbol.Accept,
+        Symbol.Cancel => WinUI.Controls.Symbol.Cancel,
+        Symbol.Play => WinUI.Controls.Symbol.Play,
+        Symbol.Pause => WinUI.Controls.Symbol.Pause,
+        Symbol.Stop => WinUI.Controls.Symbol.Stop,
+        Symbol.Back => WinUI.Controls.Symbol.Back,
+        Symbol.Forward => WinUI.Controls.Symbol.Forward,
+        Symbol.Home => WinUI.Controls.Symbol.Home,
+        Symbol.Setting => WinUI.Controls.Symbol.Setting,
+        Symbol.Refresh => WinUI.Controls.Symbol.Refresh,
+        _ => throw new ArgumentOutOfRangeException(nameof(記号), 記号, null),
+    };
 }

@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 /// </summary>
 public interface IRecyclableRow<in TItem>
 {
-    /// <summary>この項目を見せる。前の項目からは <see cref="Release"/> で離れてある。</summary>
+    /// <summary>この項目を見せる。<see cref="Show"/> の前に、前の項目は <see cref="Release"/> で解いてある。</summary>
     void Show(TItem item);
 
     /// <summary>今の項目から離れる。使い回しの待ちへ入るときと一覧の破棄のときに呼ばれる。項目に結び付いた資源はここで解く。</summary>

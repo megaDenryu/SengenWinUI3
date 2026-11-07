@@ -7,7 +7,7 @@ namespace SengenWinUI3;
 public sealed class ColorPicker : Node, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.ColorPicker, TypedEventHandler<WinUI.Controls.ColorPicker, WinUI.Controls.ColorChangedEventArgs>, EventArgs> 色の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.ColorChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.ColorChanged -= ハンドラ);
 
@@ -16,11 +16,9 @@ public sealed class ColorPicker : Node, IControlNode
 
     internal ColorPicker(Color color)
     {
-        ElementValue<WinUI.Controls.ColorPicker, Color> 表示する色 = new(本物,
-            static (本物, 値) => ToColor(本物.Color) == 値,
+        色 = InputValue.Create(本物, color,
+            static (本物, 値) => Color.FromWinUI(本物.Color) == 値,
             static (本物, 値) => 本物.Color = 値.ToWinUI());
-        色 = new(color, 表示する色.Set);
-        色.Set(color);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -41,11 +39,9 @@ public sealed class ColorPicker : Node, IControlNode
 
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    private void 色を知らせる(Action<Color> 処理)
+    private void 色を知らせる(Action<Color> 選んだ色を受ける)
     {
-        Color 現在値 = ToColor(本物.Color);
-        if (色.IsUserChange(現在値)) 処理(現在値);
+        Color 現在値 = Color.FromWinUI(本物.Color);
+        if (色.IsUserChange(現在値)) 選んだ色を受ける(現在値);
     }
-
-    private static Color ToColor(Windows.UI.Color 値) => new(値.A, 値.R, 値.G, 値.B);
 }

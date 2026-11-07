@@ -35,7 +35,7 @@ internal sealed class EffectsScene : Scene
     private void 位置と拡大率を変える()
     {
         動かしたか = !動かしたか;
-        _ = 対象.Translation(動かしたか ? 48.Px : 0.Px, 動かしたか ? 8.Px : 0.Px)
+        _ = 対象.Translation(new Point(動かしたか ? 48.Px : 0.Px, 動かしたか ? 8.Px : 0.Px))
             .Scale(動かしたか ? 1.15 : 1, 動かしたか ? 1.15 : 1);
         Run.Report(動かしたか ? "位置を横48・縦8へ変え、1.15倍にした" : "位置と拡大率を元へ戻した");
     }

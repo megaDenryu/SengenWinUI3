@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 public sealed class HyperlinkButton : Node, IClickable, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.HyperlinkButton, WinUI.RoutedEventHandler, EventArgs> 押された出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.Click += ハンドラ,
         static (本物, ハンドラ) => 本物.Click -= ハンドラ);
 

@@ -7,7 +7,7 @@ namespace SengenWinUI3;
 public sealed class CalendarDatePicker : Node, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.CalendarDatePicker, TypedEventHandler<WinUI.Controls.CalendarDatePicker, WinUI.Controls.CalendarDatePickerDateChangedEventArgs>, EventArgs> 日付の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.DateChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.DateChanged -= ハンドラ);
 
@@ -16,15 +16,9 @@ public sealed class CalendarDatePicker : Node, IControlNode
 
     internal CalendarDatePicker(DateSelection date)
     {
-        ElementValue<WinUI.Controls.CalendarDatePicker, DateSelection> 表示する日 = new(本物,
-            static (本物, 値) => 値 switch
-            {
-                NoDate _ => 本物.Date is null,
-                SelectedDate 日 => 本物.Date is { } 日時 && DateOnly.FromDateTime(日時.DateTime) == 日.Date,
-            },
-            static (本物, 値) => 本物.Date = ToWinUI(値));
-        日付 = new(date, 表示する日.Set);
-        日付.Set(date);
+        日付 = InputValue.Create(本物, date,
+            static (本物, 値) => DateSelection.FromWinUI(本物.Date).Equals(値),
+            static (本物, 値) => 本物.Date = 値.ToWinUI());
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -45,16 +39,9 @@ public sealed class CalendarDatePicker : Node, IControlNode
 
     internal override void ApplyStyle(Style style) => ControlStyle.All.Apply(style, 本物, this);
 
-    private void 日付を知らせる(Action<DateSelection> 処理)
+    private void 日付を知らせる(Action<DateSelection> 選んだ日付を受ける)
     {
-        DateSelection 現在値 = 本物.Date is { } 日時 ? new SelectedDate(DateOnly.FromDateTime(日時.DateTime)) : new NoDate();
-        if (日付.IsUserChange(現在値)) 処理(現在値);
+        DateSelection 現在値 = DateSelection.FromWinUI(本物.Date);
+        if (日付.IsUserChange(現在値)) 選んだ日付を受ける(現在値);
     }
-
-    // 日付だけを渡すので、夏時間の切り替えが多い深夜を避け、ローカル時刻の正午へ写す。
-    private static DateTimeOffset? ToWinUI(DateSelection 選択) => 選択 switch
-    {
-        NoDate _ => null,
-        SelectedDate 日 => new DateTimeOffset(日.Date.ToDateTime(new TimeOnly(12, 0), DateTimeKind.Local)),
-    };
 }

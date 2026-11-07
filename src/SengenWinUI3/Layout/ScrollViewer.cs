@@ -8,12 +8,12 @@ public sealed class ScrollViewer : Node, IControlNode, IContentOwner
     private const double 末尾とみなす残り = 1; // 拡大率による端数で、末尾にいても残りが 0 にならないことがある
 
     private static readonly EventBinding<WinUI.Controls.ScrollViewer, EventHandler<WinUI.Controls.ScrollViewerViewChangedEventArgs>, EventArgs> 位置の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.ViewChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.ViewChanged -= ハンドラ);
 
     private static readonly EventBinding<WinUI.Controls.ScrollViewer, WinUI.DependencyPropertyChangedCallback, EventArgs> 高さの出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) =>
         {
             long 札 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, ハンドラ);

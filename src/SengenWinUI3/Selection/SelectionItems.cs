@@ -5,14 +5,14 @@ namespace SengenWinUI3;
 internal sealed class SelectionItems
 {
     private readonly IList<object> 項目List;
-    private readonly Func<SelectionIndex> 現在の選択位置;
+    private readonly Func<SelectionIndex> 今の選択位置を取る;
     private readonly InputValue<SelectionIndex> 選択;
     private bool 項目の操作中か;
 
     internal SelectionItems(IList<object> items, Func<SelectionIndex> getSelectedIndex, Action<SelectionIndex> setSelectedIndex)
     {
         項目List = items;
-        現在の選択位置 = getSelectedIndex;
+        今の選択位置を取る = getSelectedIndex;
         選択 = new(getSelectedIndex(), setSelectedIndex);
     }
 
@@ -69,7 +69,7 @@ internal sealed class SelectionItems
     internal void NotifyUserChange(Action<SelectionIndex> handler)
     {
         if (項目の操作中か) return;
-        SelectionIndex 今の位置 = 現在の選択位置();
+        SelectionIndex 今の位置 = 今の選択位置を取る();
         if (選択.IsUserChange(今の位置)) handler(今の位置);
     }
 
@@ -77,7 +77,7 @@ internal sealed class SelectionItems
     {
         try
         {
-            選択.Set(現在の選択位置());
+            選択.Set(今の選択位置を取る());
         }
         finally
         {

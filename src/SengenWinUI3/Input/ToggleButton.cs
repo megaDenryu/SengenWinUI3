@@ -6,7 +6,7 @@ namespace SengenWinUI3;
 public sealed class ToggleButton : Node, IControlNode
 {
     private static readonly EventBinding<WinUI.Controls.Primitives.ToggleButton, WinUI.RoutedEventHandler, EventArgs> 変更の出来事 = new(
-        static (本物, 呼ぶ) => (送信元, 出来事) => 呼ぶ(EventArgs.Empty),
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => { 本物.Checked += ハンドラ; 本物.Unchecked += ハンドラ; },
         static (本物, ハンドラ) => { 本物.Checked -= ハンドラ; 本物.Unchecked -= ハンドラ; });
 
@@ -17,11 +17,9 @@ public sealed class ToggleButton : Node, IControlNode
     {
         本物.Content = content;
         本物.IsThreeState = false;
-        ElementValue<WinUI.Controls.Primitives.ToggleButton, bool> 設定先 = new(本物,
+        押し込まれているか = InputValue.Create(本物, isChecked,
             static (本物, 値) => (本物.IsChecked == true).Equals(値),
             static (本物, 値) => 本物.IsChecked = 値);
-        押し込まれているか = new(isChecked, 設定先.Set);
-        押し込まれているか.Set(isChecked);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -43,7 +41,7 @@ public sealed class ToggleButton : Node, IControlNode
 
     private void 利用者の変更を知らせる(Action<bool> 呼ぶ)
     {
-        bool 現在値 = 本物.IsChecked == true;
-        if (押し込まれているか.IsUserChange(現在値)) 呼ぶ(現在値);
+        bool 今押し込まれているか = 本物.IsChecked == true;
+        if (押し込まれているか.IsUserChange(今押し込まれているか)) 呼ぶ(今押し込まれているか);
     }
 }

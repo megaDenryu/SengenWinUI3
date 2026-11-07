@@ -1,6 +1,6 @@
 namespace SengenWinUI3;
 
-// 1種類の部品の当て方の並び。部品が持つ項目の印を並びから作るので、印と実際に当てる処理がずれない。
+// 1種類の部品の当て方List。部品が持つ項目の印を当て方List から作るので、印と実際に当てる処理がずれない。
 // 部品の型ごとに static readonly で1つ持ち、ApplyStyle はこの Apply を呼ぶだけにする。
 internal sealed class StyleTarget<TElement>
 {

@@ -7,11 +7,11 @@ namespace SengenWinUI3;
 public static class TransformExtensions
 {
     /// <summary>影の奥行きを保ち、配置位置からの横縦のずれを設定する。同じ値は設定し直さない。</summary>
-    public static T Translation<T>(this T node, Px x, Px y) where T : Node
+    public static T Translation<T>(this T node, Point offset) where T : Node
     {
         node.ThrowIfDestroyed();
         WinUI.FrameworkElement 本物 = node.Element;
-        Vector3 位置 = new(float.CreateChecked(x.Value), float.CreateChecked(y.Value), 本物.Translation.Z);
+        Vector3 位置 = new(float.CreateChecked(offset.X.Value), float.CreateChecked(offset.Y.Value), 本物.Translation.Z);
         if (本物.Translation != 位置)
         {
             本物.Translation = 位置;

@@ -6,54 +6,44 @@ namespace SengenWinUI3;
 public sealed class Line : Node
 {
     private readonly WinUI.Shapes.Line 本物 = new();
-    private readonly ElementValue<WinUI.Shapes.Line, Px> 始点の横;
-    private readonly ElementValue<WinUI.Shapes.Line, Px> 始点の縦;
-    private readonly ElementValue<WinUI.Shapes.Line, Px> 終点の横;
-    private readonly ElementValue<WinUI.Shapes.Line, Px> 終点の縦;
+    private readonly ElementValue<WinUI.Shapes.Line, Point> 始点;
+    private readonly ElementValue<WinUI.Shapes.Line, Point> 終点;
 
-    internal Line(Px x1, Px y1, Px x2, Px y2)
+    internal Line(Point start, Point end)
     {
-        始点の横 = new(本物, static (本物, 値) => 本物.X1 == 値.Value, static (本物, 値) => 本物.X1 = 値.Value);
-        始点の横.Set(x1);
-        始点の縦 = new(本物, static (本物, 値) => 本物.Y1 == 値.Value, static (本物, 値) => 本物.Y1 = 値.Value);
-        始点の縦.Set(y1);
-        終点の横 = new(本物, static (本物, 値) => 本物.X2 == 値.Value, static (本物, 値) => 本物.X2 = 値.Value);
-        終点の横.Set(x2);
-        終点の縦 = new(本物, static (本物, 値) => 本物.Y2 == 値.Value, static (本物, 値) => 本物.Y2 = 値.Value);
-        終点の縦.Set(y2);
+        始点 = new(本物,
+            static (本物, 値) => 本物.X1 == 値.X.Value && 本物.Y1 == 値.Y.Value,
+            static (本物, 値) =>
+            {
+                if (本物.X1 != 値.X.Value) 本物.X1 = 値.X.Value;
+                if (本物.Y1 != 値.Y.Value) 本物.Y1 = 値.Y.Value;
+            });
+        終点 = new(本物,
+            static (本物, 値) => 本物.X2 == 値.X.Value && 本物.Y2 == 値.Y.Value,
+            static (本物, 値) =>
+            {
+                if (本物.X2 != 値.X.Value) 本物.X2 = 値.X.Value;
+                if (本物.Y2 != 値.Y.Value) 本物.Y2 = 値.Y.Value;
+            });
+        始点.Set(start);
+        終点.Set(end);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
 
-    /// <summary>始点の横座標を替える。</summary>
-    public Line SetX1(Px x1)
+    /// <summary>始点を替える。</summary>
+    public Line SetStart(Point start)
     {
         ThrowIfDestroyed();
-        始点の横.Set(x1);
+        始点.Set(start);
         return this;
     }
 
-    /// <summary>始点の縦座標を替える。</summary>
-    public Line SetY1(Px y1)
+    /// <summary>終点を替える。</summary>
+    public Line SetEnd(Point end)
     {
         ThrowIfDestroyed();
-        始点の縦.Set(y1);
-        return this;
-    }
-
-    /// <summary>終点の横座標を替える。</summary>
-    public Line SetX2(Px x2)
-    {
-        ThrowIfDestroyed();
-        終点の横.Set(x2);
-        return this;
-    }
-
-    /// <summary>終点の縦座標を替える。</summary>
-    public Line SetY2(Px y2)
-    {
-        ThrowIfDestroyed();
-        終点の縦.Set(y2);
+        終点.Set(end);
         return this;
     }
 

@@ -4,4 +4,6 @@ namespace SengenWinUI3;
 public readonly record struct Color(byte A, byte R, byte G, byte B)
 {
     internal Windows.UI.Color ToWinUI() => Windows.UI.Color.FromArgb(A, R, G, B);
+
+    internal static Color FromWinUI(Windows.UI.Color 値) => new(値.A, 値.R, 値.G, 値.B);
 }

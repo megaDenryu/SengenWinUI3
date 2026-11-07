@@ -10,20 +10,14 @@ public sealed class ProgressBar : Node, IControlNode
 
     internal ProgressBar(ProgressState progress)
     {
-        進み = new(本物, static (本物, 値) => 値 switch
-        {
-            DeterminateProgress 確定 => !本物.IsIndeterminate && 本物.Value == 確定.Value.Value,
-            IndeterminateProgress _ => 本物.IsIndeterminate,
-        }, static (本物, 値) =>
-        {
-            (bool 不確定か, double 割合) = 値 switch
+        進み = new(本物,
+            static (本物, 値) => ProgressDisplay.IsShown(値, 本物.IsIndeterminate, 本物.Value),
+            static (本物, 値) =>
             {
-                DeterminateProgress 確定 => (false, 確定.Value.Value),
-                IndeterminateProgress _ => (true, 本物.Value),
-            };
-            if (本物.Value != 割合) 本物.Value = 割合;
-            if (本物.IsIndeterminate != 不確定か) 本物.IsIndeterminate = 不確定か;
-        });
+                (bool 不確定か, double 割合) = ProgressDisplay.Target(値, 本物.Value);
+                if (本物.Value != 割合) 本物.Value = 割合;
+                if (本物.IsIndeterminate != 不確定か) 本物.IsIndeterminate = 不確定か;
+            });
         進み.Set(progress);
     }
 

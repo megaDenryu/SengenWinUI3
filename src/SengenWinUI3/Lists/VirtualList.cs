@@ -7,9 +7,10 @@ namespace SengenWinUI3;
 /// 見えている行の部品だけを作り、見えなくなった行の部品を別の項目で使い回す一覧。作る関数は <see cref="UI.VirtualList{TItem, TRow}(Func{TRow}, Style?)"/>。
 /// スクロールは持たないので、<see cref="ScrollViewer"/> の中に置く(外側のスクロールの見えている範囲で行を作る)。
 /// 行は使い回されて別の項目を見せるので、行の出来事は作るときに1回だけ配線し、ハンドラへは行がいま見せている項目の ID を渡す。
-/// 行が項目の中のセルを見せるときは、<see cref="IRecyclableRow{TItem}.Show"/> で <c>Observe</c> を呼んで札を持ち、<see cref="IRecyclableRow{TItem}.Release"/> で札を Dispose する。
+/// 行は <see cref="Component"/> の派生にする。項目の中のセルを見せる行は、コンストラクタで <c>WatchCell</c> の見張りを作ってフィールドに持ち、<see cref="IRecyclableRow{TItem}.Show"/> で項目のセルを Watch する。
+/// 一覧は、行を項目から離す(<see cref="IRecyclableRow{TItem}.Release"/> を呼ぶ)前に、行の全部の見張りを解くので、行の作者は Release で見張りを解かなくてよい。
 /// </summary>
-public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclableRow<TItem>
+public sealed class VirtualList<TItem, TRow> : Node where TRow : Component, IRecyclableRow<TItem>
 {
     private static readonly StyleTarget<WinUI.Controls.ItemsRepeater> 当て方 = new(FrameworkElementStyle.Layout);
 
@@ -23,7 +24,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclab
     internal VirtualList(Func<TRow> createRow)
     {
         行を作る = createRow;
-        本物.ItemTemplate = new RowElementFactory(項目の行を出す, 行を待ちへ入れる);
+        本物.ItemTemplate = new RowElementFactory(項目を見せる行を用意する, 行を待ちへ入れる);
         本物.ItemsSource = 項目List;
     }
 
@@ -72,8 +73,8 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclab
 
     internal override void ApplyStyle(Style style) => 当て方.Apply(style, 本物, this);
 
-    // 行は作ってから一覧の破棄まで一覧の子であり、行だけを外す方法は無い。
-    internal override void RemoveChildElement(Node child) =>
+    // 行は作ってから一覧の破棄まで一覧の子であり、行だけを外す方法は無い。状態を変える前に例外を投げる。
+    internal override void ThrowIfChildCannotLeave(Node child) =>
         throw new InvalidOperationException($"{GetType().Name} の行は一覧が持つ。行だけを Detach か Destroy できない");
 
     // 子孫(行)の破棄の前に、項目を見せている行を項目から離す。待っている行は離れてある。
@@ -82,13 +83,14 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclab
         CollectedExceptions 起きた例外 = new();
         foreach (TRow 行 in 項目を見せている行Set)
         {
+            起きた例外.Run(行.UnwatchAllCells);
             起きた例外.Run(行.Release);
         }
         項目を見せている行Set.Clear();
         起きた例外.ThrowIfAny();
     }
 
-    private WinUI.FrameworkElement 項目の行を出す(object 項目のデータ)
+    private WinUI.FrameworkElement 項目を見せる行を用意する(object 項目のデータ)
     {
         ThrowIfDestroyed();
         if (項目のデータ is not 項目の箱 箱)
@@ -105,6 +107,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclab
     {
         if (!IsDestroyed && 作った行Map.TryGetValue(行の本物, out TRow? 行) && 項目を見せている行Set.Remove(行))
         {
+            行.UnwatchAllCells();
             行.Release();
             使い回しを待つ行List.Push(行);
         }
@@ -113,7 +116,7 @@ public sealed class VirtualList<TItem, TRow> : Node where TRow : Node, IRecyclab
     private TRow 行を新しく作る()
     {
         TRow 行 = 行を作る();
-        AdoptChild(行, static () => { }); // 行の本物は、ItemsRepeater が自分の子へ入れる
+        AdoptChildPlacedElsewhere(行); // 行の本物は、ItemsRepeater が自分の子へ入れる
         作った行Map.Add(行.Element, 行);
         return 行;
     }

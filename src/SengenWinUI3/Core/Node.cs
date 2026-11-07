@@ -33,6 +33,7 @@ public abstract class Node : IChildOwner
         {
             return;
         }
+        親子関係.ThrowIfCannotLeave(this); // 外せない子(一覧の行・Component の根)は、何も変えずに例外を投げる
         CollectedExceptions 起きた例外 = new();
         起きた例外.Run(() => 親子関係.LeaveOwner(this)); // 注意: 外すときに自分の本物を読むので、破棄の印を付ける前に外す
         内側を破棄する(起きた例外);
@@ -52,6 +53,9 @@ public abstract class Node : IChildOwner
 
     // 種類ごとの後片付け。子孫を破棄する前に呼ばれる。
     internal virtual void OnDestroying() { }
+
+    // 子が自分から離れられるか。外せない子を持つ部品は、状態を変える前に例外を投げるよう上書きする。
+    internal virtual void ThrowIfChildCannotLeave(Node child) { }
 
     // 子の本物を、自分の本物のどこから外すか。子を登録する部品は必ず上書きする。
     internal virtual void RemoveChildElement(Node child) =>
@@ -73,6 +77,9 @@ public abstract class Node : IChildOwner
         child.BecomeChildOf(this, 本物へ入れる);
         親子関係.AddChild(child);
     }
+
+    // 本物は別の仕組み(親の本物そのもの・ItemsRepeater・見せるときに入れる入れ物)が入れる子を、登録だけする。
+    internal void AdoptChildPlacedElsewhere(Node child) => AdoptChild(child, static () => { });
 
     // 子孫の本物は1つずつ外さない。子を全部破棄した後に、子の破棄が例外を投げても、本物の子をまとめて外す。
     internal void DestroyAllChildren(Action 本物の子をまとめて外す)
@@ -96,7 +103,9 @@ public abstract class Node : IChildOwner
     internal IDisposable SubscribeCell<TValue>(IReadOnlyCell<TValue> cell, Action<TValue> apply)
     {
         ThrowIfDestroyed();
-        return 後片付けの台帳.AddRemovable(new CellSubscriptionOnUiThread<TValue>(cell, apply));
+        CellWatcher<TValue> 見張り = new(this, apply);
+        見張り.Watch(cell);
+        return 後片付けの台帳.AddRemovable(new CallOnDispose(見張り.Unwatch));
     }
 
     internal void MarkWiredOnce(string eventName)
@@ -117,6 +126,8 @@ public abstract class Node : IChildOwner
     }
 
     void IChildOwner.AdoptChild(Node child, Action 本物へ入れる) => AdoptChild(child, 本物へ入れる);
+
+    void IChildOwner.ThrowIfCannotRelease(Node child) => ThrowIfChildCannotLeave(child);
 
     void IChildOwner.ReleaseChild(Node child)
     {

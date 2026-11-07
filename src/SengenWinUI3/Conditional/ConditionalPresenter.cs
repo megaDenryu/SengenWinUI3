@@ -65,16 +65,16 @@ public sealed class ConditionalPresenter : Node
             this.作る関数 = 作る関数;
             if (部品 is not null)
             {
-                子として預ける(部品);
+                持ち主の子として登録する(部品);
             }
         }
 
         internal Node? Prepare()
         {
-            if (部品 is null && 作る関数 is { } 作る)
+            if (部品 is null && 作る関数 is { } 部品を作る関数)
             {
-                作る関数 = null;
-                子として預ける(作る());
+                持ち主の子として登録する(部品を作る関数());
+                作る関数 = null; // 注意: 作る関数が例外を投げたら、次に見せるときにまた作る
             }
             return 部品;
         }
@@ -89,10 +89,10 @@ public sealed class ConditionalPresenter : Node
         }
 
         // 本物は見せるときに Grid へ入れるので、ここでは子として登録だけする。
-        private void 子として預ける(Node 預ける部品)
+        private void 持ち主の子として登録する(Node 登録する部品)
         {
-            持ち主.AdoptChild(預ける部品, static () => { });
-            部品 = 預ける部品;
+            持ち主.AdoptChildPlacedElsewhere(登録する部品);
+            部品 = 登録する部品;
         }
     }
 }

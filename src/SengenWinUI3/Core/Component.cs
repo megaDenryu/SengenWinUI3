@@ -1,4 +1,3 @@
-using SengenWinUI3.State;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
@@ -10,6 +9,7 @@ namespace SengenWinUI3;
 public abstract class Component : Node
 {
     private readonly Lazy<Node> 根;
+    private List<Action>? 見張りを解く関数List;
 
     /// <summary>根はここでは作らず、初めて本物が要ったときに作る。</summary>
     protected Component()
@@ -29,20 +29,36 @@ public abstract class Component : Node
     protected void Own(Node detachedNode) => OwnDisposable(new CallOnDispose(detachedNode.Destroy));
 
     /// <summary>
-    /// セルを結ぶ。結んだ時に1回、セルの値が変わるたびに <paramref name="apply"/> を UI スレッドで呼ぶ。
-    /// 返した値を Dispose すると解ける。Dispose しなくても、この部品の破棄で解ける。使い回す行が、項目ごとに結び直すために使う(Show で結び、Release で解く)。
+    /// 結ぶセルを替えられるセルの見張りを作る。<see cref="CellWatcher{TValue}.Watch"/> で結んだ時に1回、セルの値が変わるたびに <paramref name="apply"/> を UI スレッドで呼ぶ。
+    /// コンストラクタで呼んでフィールドに持つ。使い回す行は <c>Show</c> で Watch し、<see cref="VirtualList{TItem, TRow}"/> が行を項目から離す前に全部の見張りを解く。この部品の破棄でも解ける。
     /// </summary>
-    protected IDisposable Observe<TValue>(IReadOnlyCell<TValue> cell, Action<TValue> apply) => SubscribeCell(cell, apply);
+    protected CellWatcher<TValue> WatchCell<TValue>(Action<TValue> apply)
+    {
+        ThrowIfDestroyed();
+        CellWatcher<TValue> 見張り = new(this, apply);
+        OwnDisposable(new CallOnDispose(見張り.Unwatch));
+        (見張りを解く関数List ??= []).Add(見張り.Unwatch);
+        return 見張り;
+    }
+
+    // 使い回す行を項目から離すときに、一覧が呼ぶ。
+    internal void UnwatchAllCells()
+    {
+        foreach (Action 見張りを解く in 見張りを解く関数List ?? [])
+        {
+            見張りを解く();
+        }
+    }
 
     internal sealed override void ApplyStyle(Style style) => 根.Value.ApplyStyle(style);
 
-    internal sealed override void RemoveChildElement(Node child) =>
+    internal sealed override void ThrowIfChildCannotLeave(Node child) =>
         throw new InvalidOperationException($"{GetType().Name} の根は外せない。根の本物は {GetType().Name} の本物そのものである");
 
     private Node 根を構築する()
     {
         Node 構築した根 = Build();
-        AdoptChild(構築した根, static () => { }); // 根の本物は、この部品の本物として親が入れる
+        AdoptChildPlacedElsewhere(構築した根); // 根の本物は、この部品の本物として親が入れる
         return 構築した根;
     }
 }

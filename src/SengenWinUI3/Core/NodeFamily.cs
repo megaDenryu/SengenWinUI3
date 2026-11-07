@@ -20,8 +20,11 @@ internal sealed class NodeFamily
 
     internal void ForgetOwner() => Owner = null;
 
+    internal void ThrowIfCannotLeave(Node 自分) => Owner?.ThrowIfCannotRelease(自分);
+
     internal void LeaveOwner(Node 自分)
     {
+        ThrowIfCannotLeave(自分);
         IChildOwner? 持ち主 = Owner;
         Owner = null;
         持ち主?.ReleaseChild(自分);

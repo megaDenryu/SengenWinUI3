@@ -45,18 +45,18 @@ public sealed class ScrollViewer : Node, IControlNode
             if (!IsDestroyed) 末尾にいるか = 本物.ScrollableHeight - 本物.VerticalOffset <= 末尾とみなす残り;
         };
         WinUI.DependencyPropertyChangedCallback 中身の高さが変わったら末尾へ付いていく = (_, _) => 末尾へ付いていく();
-        long 高さを購読した番号 = 0;
+        long 高さの購読を解く札 = 0;
         WireEvent(
             nameof(StickToEnd),
             () =>
             {
                 本物.ViewChanged += 位置が変わったら末尾にいるかを見直す;
-                高さを購読した番号 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 中身の高さが変わったら末尾へ付いていく);
+                高さの購読を解く札 = 本物.RegisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 中身の高さが変わったら末尾へ付いていく);
             },
             () =>
             {
                 本物.ViewChanged -= 位置が変わったら末尾にいるかを見直す;
-                本物.UnregisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 高さを購読した番号);
+                本物.UnregisterPropertyChangedCallback(WinUI.Controls.ScrollViewer.ExtentHeightProperty, 高さの購読を解く札);
             });
         return this;
     }

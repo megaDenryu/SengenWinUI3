@@ -66,7 +66,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
 | `Border` | `Border(content, style)`・`SetContent` |
 | `Canvas` | `Canvas(style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
-| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`OnTextChanged`・`SetColors(TextBoxColors)` |
+| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`OnTextChanged`・`SetColors(TextBoxColors)`・`Selection`(`TextSelection`。カーソルの位置は `Start`)・`SetSelection(selection)`(変更を通知しない)・`IsComposing`(日本語入力の変換中なら true) |
 | `PasswordBox` | `PasswordBox(password, placeholderText, style)`・`SetPassword`・`OnPasswordChanged` |
 | `NumberBox` | `NumberBox(value, minimum, maximum, style)`・`SetValue`・`OnValueChanged` |
 | `Slider` | `Slider(value, minimum, maximum, stepFrequency, style)`・`SetValue`・`OnValueChanged`・`SetColors(SliderColors)` |
@@ -88,7 +88,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `Line` | `Line(start, end, style)`・`SetStart`・`SetEnd`(`start` と `end` は `Point`) |
 | `CalendarDatePicker` | `CalendarDatePicker(date, style)`・`SetDate`・`OnDateChanged` |
 | `ColorPicker` | `ColorPicker(color, style)`・`SetColor`・`OnColorChanged` |
-| `Popup` | `Popup(content, offset, isLightDismissEnabled)`(`offset` は `Point`)・`Open(anchor)`・`Close`・`SetContent` |
+| `Popup` | `Popup(content, offset, isLightDismissEnabled)`(`offset` は `Point`)または `PopupAbove(content, isLightDismissEnabled)`(基準の上へ左端をそろえて出す)・`Open(anchor)`・`Close`・`SetContent` |
 | `ContentDialog` | `ContentDialog(title, content, buttons)`(`buttons` は `ContentDialogButtons` で、`Primary`・`Secondary`・`Close` を名前付きで渡す)・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
 | `Flyout` | `Flyout(content)` か `MenuFlyout(...)` を `button.Flyout(...)` で付ける |
 | `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
@@ -97,7 +97,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 
 作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
 
-チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`RotationTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)`・`Rotation(angle)`(`angle` は `Degrees`。`90.Degrees` と書く)・`CenterPoint(center)`(`center` は `Point`)で付ける。不透明度を繰り返し上下させるのは `PulseOpacity(lowest, period)`(`lowest` は `Ratio`)と `StopPulse()` である。フォーカスは `OnGotFocus`・`OnLostFocus`、ポインターは `OnPointerMoved`・`CapturePointer(input)`・`ReleasePointerCapture(input)`・`ReleasePointerCaptures()` で扱う。
+チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`RotationTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)`・`Rotation(angle)`(`angle` は `Degrees`。`90.Degrees` と書く)・`CenterPoint(center)`(`center` は `Point`)で付ける。不透明度を繰り返し上下させるのは `PulseOpacity(lowest, period)`(`lowest` は `Ratio`)と `StopPulse()` である。キーは `OnKeyDown`(子が処理した後)と `OnPreviewKeyDown`(子が処理する前。`Handled` を立てると子の既定の処理が起きない)、フォーカスは `OnGotFocus`・`OnLostFocus`、ポインターは `OnPointerMoved`・`CapturePointer(input)`・`ReleasePointerCapture(input)`・`ReleasePointerCaptures()` で扱う。
 
 状態ごとの色(ふだん・重ねた・押した・押せない)を持つ `Button`・`ToggleButton`・`TextBox`・`Slider` は、`SetColors` で WinUI の lightweight styling の資源を書く。資源はテンプレートが読み込みのときに1回引くので、`SetColors` は木へ入れる前に呼び、読み込まれた後に呼ぶと例外になる。
 

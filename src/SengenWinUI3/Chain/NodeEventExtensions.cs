@@ -11,6 +11,13 @@ public static class NodeEventExtensions
     public static T OnKeyDown<T>(this T node, Action<KeyInput> handler) where T : Node =>
         node.WireEvent(nameof(OnKeyDown), NodeEvents.KeyDown, 出来事 => handler(new KeyInput(出来事)));
 
+    /// <summary>
+    /// 部品かその中にフォーカスがあるとき、キーを子の部品が処理する前に処理を呼ぶ。<see cref="KeyInput.Handled"/> を true にすると、
+    /// 子の部品の既定の処理(複数行の入力欄の Enter の改行・矢印のカーソルの移動・Tab のフォーカスの移動)と <see cref="OnKeyDown{T}"/> は起きない。
+    /// </summary>
+    public static T OnPreviewKeyDown<T>(this T node, Action<KeyInput> handler) where T : Node =>
+        node.WireEvent(nameof(OnPreviewKeyDown), NodeEvents.PreviewKeyDown, 出来事 => handler(new KeyInput(出来事)));
+
     /// <summary>ポインターが部品の上に入ったときに処理を呼ぶ。</summary>
     public static T OnPointerEntered<T>(this T node, Action<PointerInput> handler) where T : Node =>
         node.WireEvent(nameof(OnPointerEntered), NodeEvents.PointerEntered, 出来事 => handler(new PointerInput(出来事, node.Element)));

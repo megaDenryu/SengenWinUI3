@@ -10,8 +10,19 @@ public sealed class TextBox : Node, IControlNode
         static (本物, ハンドラ) => 本物.TextChanged += ハンドラ,
         static (本物, ハンドラ) => 本物.TextChanged -= ハンドラ);
 
+    private static readonly EventBinding<WinUI.Controls.TextBox, Windows.Foundation.TypedEventHandler<WinUI.Controls.TextBox, WinUI.Controls.TextCompositionStartedEventArgs>, EventArgs> 変換の始まりの出来事 = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
+        static (本物, ハンドラ) => 本物.TextCompositionStarted += ハンドラ,
+        static (本物, ハンドラ) => 本物.TextCompositionStarted -= ハンドラ);
+
+    private static readonly EventBinding<WinUI.Controls.TextBox, Windows.Foundation.TypedEventHandler<WinUI.Controls.TextBox, WinUI.Controls.TextCompositionEndedEventArgs>, EventArgs> 変換の終わりの出来事 = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
+        static (本物, ハンドラ) => 本物.TextCompositionEnded += ハンドラ,
+        static (本物, ハンドラ) => 本物.TextCompositionEnded -= ハンドラ);
+
     private readonly WinUI.Controls.TextBox 本物 = new();
     private readonly InputValue<string> 文字;
+    private bool 変換中;
 
     internal TextBox(string text, string placeholderText, bool acceptsReturn, TextWrapping textWrapping)
     {
@@ -21,6 +32,8 @@ public sealed class TextBox : Node, IControlNode
         文字 = InputValue.Create(本物, text,
             static (本物, 値) => string.Equals(本物.Text, 値, StringComparison.Ordinal),
             static (本物, 値) => 本物.Text = 値);
+        this.WireEventOfOwnElement(本物, 変換の始まりの出来事, () => 変換中 = true);
+        this.WireEventOfOwnElement(本物, 変換の終わりの出来事, () => 変換中 = false);
     }
 
     internal override WinUI.FrameworkElement Element => 本物;
@@ -32,6 +45,36 @@ public sealed class TextBox : Node, IControlNode
         ThrowIfDestroyed();
         文字.Set(text);
         return this;
+    }
+
+    /// <summary>今の選択範囲を返す。範囲を選んでいなければ、長さ 0 でカーソルの位置を表す。</summary>
+    public TextSelection Selection
+    {
+        get
+        {
+            ThrowIfDestroyed();
+            return new TextSelection(本物.SelectionStart, 本物.SelectionLength);
+        }
+    }
+
+    /// <summary>カーソルの位置か選択範囲を設定する。この操作では変更を通知しない。文字の長さを超える分の扱いは WinUI に従う。負の値は例外になる。</summary>
+    public TextBox SetSelection(TextSelection selection)
+    {
+        ThrowIfDestroyed();
+        ArgumentOutOfRangeException.ThrowIfNegative(selection.Start);
+        ArgumentOutOfRangeException.ThrowIfNegative(selection.Length);
+        本物.Select(selection.Start, selection.Length);
+        return this;
+    }
+
+    /// <summary>日本語入力などの変換の途中なら true。変換を確定する Enter や矢印を横取りしないために、キーを処理する前に読む。</summary>
+    public bool IsComposing
+    {
+        get
+        {
+            ThrowIfDestroyed();
+            return 変換中;
+        }
     }
 
     /// <summary>ふだん・重ねた・フォーカス・押せないの状態ごとの色を設定する。木へ入れる前に呼ぶ。読み込まれた後に呼ぶと例外を投げる。</summary>

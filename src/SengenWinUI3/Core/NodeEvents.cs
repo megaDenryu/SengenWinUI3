@@ -25,6 +25,11 @@ internal static class NodeEvents
         static (本物, ハンドラ) => 本物.KeyDown += ハンドラ,
         static (本物, ハンドラ) => 本物.KeyDown -= ハンドラ);
 
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.KeyEventHandler, WinUI.Input.KeyRoutedEventArgs> PreviewKeyDown = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.PreviewKeyDown += ハンドラ,
+        static (本物, ハンドラ) => 本物.PreviewKeyDown -= ハンドラ);
+
     internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.PointerEventHandler, WinUI.Input.PointerRoutedEventArgs> PointerEntered = new(
         static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
         static (本物, ハンドラ) => 本物.PointerEntered += ハンドラ,

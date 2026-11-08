@@ -2,19 +2,19 @@ using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>基準の部品から指定した位置へ、中身を重ねて出す。</summary>
+/// <summary>基準の部品から指定した位置へ、中身を重ねて出す。位置は、基準の左上からのずれ(<c>UI.Popup</c>)か、基準の上(<c>UI.PopupAbove</c>)で指定する。</summary>
 public sealed class Popup : FloatingNode
 {
     private static readonly IDisposable 待っていない = new CallOnDispose(static () => { });
 
     private readonly WinUI.Controls.Primitives.Popup 本物 = new();
     private readonly FloatingContent 中身置き場;
-    private readonly Point 基準からのずれ;
+    private readonly PopupPlacement 置き方;
     private IDisposable 読み込みの待ち = 待っていない; // 基準の読み込みを待つ購読。待っていなければ、解いても何もしない札
 
-    internal Popup(Node content, Point offset, bool isLightDismissEnabled)
+    internal Popup(Node content, PopupPlacement placement, bool isLightDismissEnabled)
     {
-        基準からのずれ = offset;
+        置き方 = placement;
         本物.IsLightDismissEnabled = isLightDismissEnabled;
         中身置き場 = new(this, 中身 => 本物.Child = 中身);
         中身置き場.SetContent(content);
@@ -65,10 +65,8 @@ public sealed class Popup : FloatingNode
     private void 開く(WinUI.FrameworkElement 基準)
     {
         WinUI.XamlRoot 根 = 基準.XamlRoot ?? throw new InvalidOperationException("Popup の基準に XamlRoot が無い");
-        Windows.Foundation.Point 位置 = 基準.TransformToVisual(根.Content).TransformPoint(new Windows.Foundation.Point(0, 0));
         本物.XamlRoot = 根;
-        本物.HorizontalOffset = 位置.X + 基準からのずれ.X.Value;
-        本物.VerticalOffset = 位置.Y + 基準からのずれ.Y.Value;
+        置き方.ApplyTo(本物, 基準, 根);
         本物.IsOpen = true;
     }
 

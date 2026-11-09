@@ -110,7 +110,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | 部品 | 共通の幅・高さ・最小最大・Margin・寄せ方・Opacity に追加できる項目 |
 |---|---|
 | `StackPanel` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・Orientation・Spacing |
-| `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled・TextAlignment・TextTrimming |
+| `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled・TextAlignment・TextTrimming・LineHeight |
 | `Button`・`ScrollViewer` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
 | `Grid` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・RowSpacing・ColumnSpacing |
 | `Border` | Padding・Background・BorderBrush・BorderThickness・CornerRadius |

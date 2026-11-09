@@ -62,6 +62,8 @@ public sealed class Style
     public TextAlignment? TextAlignment { get; init; }
     /// <summary>幅に収まらない文字のはみ出しの切り詰め方(TextBlock)。</summary>
     public TextTrimming? TextTrimming { get; init; }
+    /// <summary>文字の1行の高さ(TextBlock)。</summary>
+    public Px? LineHeight { get; init; }
     /// <summary>不透明度。</summary>
     public Ratio? Opacity { get; init; }
     /// <summary>Grid の行の間隔。</summary>
@@ -111,6 +113,7 @@ public sealed class Style
         IsTextSelectionEnabled = overlay.IsTextSelectionEnabled ?? IsTextSelectionEnabled,
         TextAlignment = overlay.TextAlignment ?? TextAlignment,
         TextTrimming = overlay.TextTrimming ?? TextTrimming,
+        LineHeight = overlay.LineHeight ?? LineHeight,
         Opacity = overlay.Opacity ?? Opacity,
         RowSpacing = overlay.RowSpacing ?? RowSpacing,
         ColumnSpacing = overlay.ColumnSpacing ?? ColumnSpacing,
@@ -171,6 +174,7 @@ public sealed class Style
         | (IsTextSelectionEnabled is null ? StyleItems.None : StyleItems.IsTextSelectionEnabled)
         | (TextAlignment is null ? StyleItems.None : StyleItems.TextAlignment)
         | (TextTrimming is null ? StyleItems.None : StyleItems.TextTrimming)
+        | (LineHeight is null ? StyleItems.None : StyleItems.LineHeight)
         | (RowSpacing is null ? StyleItems.None : StyleItems.RowSpacing)
         | (ColumnSpacing is null ? StyleItems.None : StyleItems.ColumnSpacing)
         | (HorizontalContentAlignment is null ? StyleItems.None : StyleItems.HorizontalContentAlignment)

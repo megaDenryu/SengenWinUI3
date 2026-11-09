@@ -23,11 +23,12 @@ internal static class TextBlockStyle
         });
 
     internal static readonly IStyleGroup<WinUI.Controls.TextBlock> Text = new StyleGroup<WinUI.Controls.TextBlock>(
-        StyleItems.TextWrapping | StyleItems.IsTextSelectionEnabled,
+        StyleItems.TextWrapping | StyleItems.IsTextSelectionEnabled | StyleItems.LineHeight,
         static (見た目, 本物) =>
         {
             if (見た目.TextWrapping is { } 折り返し方) 本物.TextWrapping = 折り返し方.ToWinUI();
             if (見た目.IsTextSelectionEnabled is { } 選べるか) 本物.IsTextSelectionEnabled = 選べるか;
+            if (見た目.LineHeight is { } 行の高さ) 本物.LineHeight = 行の高さ.Value;
         });
 
     internal static readonly IStyleGroup<WinUI.Controls.TextBlock> Alignment = new StyleGroup<WinUI.Controls.TextBlock>(

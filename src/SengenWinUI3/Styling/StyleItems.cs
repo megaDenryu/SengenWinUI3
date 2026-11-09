@@ -39,4 +39,5 @@ internal enum StyleItems : long
     StrokeLineJoin = 1L << 31,
     TextAlignment = 1L << 32,
     TextTrimming = 1L << 33,
+    LineHeight = 1L << 34,
 }

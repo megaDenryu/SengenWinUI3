@@ -26,6 +26,40 @@ public sealed class Slider : Node, IControlNode
     internal override WinUI.FrameworkElement Element => 本物;
     WinUI.Controls.Control IControlNode.Control => 本物;
 
+    /// <summary>本物の今の値。利用者が動かした値も、<see cref="SetValue"/> の値が刻みへ丸められた後の値も読める。</summary>
+    public double Value
+    {
+        get
+        {
+            ThrowIfDestroyed();
+            return 本物.Value;
+        }
+    }
+
+    /// <summary>矢印のキーなど、値を少しだけ動かす操作の量を設定する。刻みとは別の量である。</summary>
+    public Slider SetSmallChange(double smallChange)
+    {
+        ThrowIfDestroyed();
+        本物.SmallChange = smallChange;
+        return this;
+    }
+
+    /// <summary>PageUp と PageDown など、値を大きく動かす操作の量を設定する。</summary>
+    public Slider SetLargeChange(double largeChange)
+    {
+        ThrowIfDestroyed();
+        本物.LargeChange = largeChange;
+        return this;
+    }
+
+    /// <summary>つまみを動かしている間に、値を出す説明の文字を出すかを決める。</summary>
+    public Slider IsThumbToolTipEnabled(bool isEnabled)
+    {
+        ThrowIfDestroyed();
+        本物.IsThumbToolTipEnabled = isEnabled;
+        return this;
+    }
+
     /// <summary>プログラムから値を設定する。この操作では変更を通知しない。</summary>
     public Slider SetValue(double value)
     {

@@ -3,7 +3,7 @@ using WinUI = Microsoft.UI.Xaml;
 namespace SengenWinUI3;
 
 /// <summary>画像を見せる部品。出どころはファイルのパスか ms-appx の Uri で渡す。作る関数は <see cref="UI.Image(Uri, Style?)"/> ほか。</summary>
-public sealed class Image : Node
+public sealed partial class Image : Node
 {
     private static readonly StyleTarget<WinUI.Controls.Image> 当て方 = new(FrameworkElementStyle.Layout);
 

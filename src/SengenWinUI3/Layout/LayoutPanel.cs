@@ -39,16 +39,16 @@ public sealed class LayoutPanel : Node, IHasChildren
 
         protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
         {
-            ViewSize 望む大きさ = 配置.Measure(子への入り口, ToViewSize(availableSize));
+            ViewSize 望む大きさ = 配置.Measure(子への入り口, ViewSizeへ変える(availableSize));
             return new Windows.Foundation.Size(望む大きさ.Width.Value, 望む大きさ.Height.Value);
         }
 
         protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
         {
-            ViewSize 使った大きさ = 配置.Arrange(子への入り口, ToViewSize(finalSize));
+            ViewSize 使った大きさ = 配置.Arrange(子への入り口, ViewSizeへ変える(finalSize));
             return new Windows.Foundation.Size(使った大きさ.Width.Value, 使った大きさ.Height.Value);
         }
 
-        private static ViewSize ToViewSize(Windows.Foundation.Size 大きさ) => new(new Px(大きさ.Width), new Px(大きさ.Height));
+        private static ViewSize ViewSizeへ変える(Windows.Foundation.Size 大きさ) => new(new Px(大きさ.Width), new Px(大きさ.Height));
     }
 }

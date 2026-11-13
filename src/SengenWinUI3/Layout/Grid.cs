@@ -25,7 +25,7 @@ public sealed class Grid : Node, IHasChildren
     public Grid SetRowDefinitions(GridLength[] rowDefinitions)
     {
         ThrowIfDestroyed();
-        ThrowIfCountDiffers(rowDefinitions.Length, 本物.RowDefinitions.Count, nameof(rowDefinitions));
+        数が違えば例外を投げる(rowDefinitions.Length, 本物.RowDefinitions.Count, nameof(rowDefinitions));
         for (int 番号 = 0; 番号 < rowDefinitions.Length; 番号++)
         {
             本物.RowDefinitions[番号].Height = rowDefinitions[番号].ToWinUI();
@@ -37,7 +37,7 @@ public sealed class Grid : Node, IHasChildren
     public Grid SetColumnDefinitions(GridLength[] columnDefinitions)
     {
         ThrowIfDestroyed();
-        ThrowIfCountDiffers(columnDefinitions.Length, 本物.ColumnDefinitions.Count, nameof(columnDefinitions));
+        数が違えば例外を投げる(columnDefinitions.Length, 本物.ColumnDefinitions.Count, nameof(columnDefinitions));
         for (int 番号 = 0; 番号 < columnDefinitions.Length; 番号++)
         {
             本物.ColumnDefinitions[番号].Width = columnDefinitions[番号].ToWinUI();
@@ -55,7 +55,7 @@ public sealed class Grid : Node, IHasChildren
 
     internal override void ApplyStyle(Style style) => GridStyle.All.Apply(style, 本物, this);
 
-    private static void ThrowIfCountDiffers(int 渡した数, int 今の数, string 引数の名前)
+    private static void 数が違えば例外を投げる(int 渡した数, int 今の数, string 引数の名前)
     {
         if (渡した数 != 今の数)
         {

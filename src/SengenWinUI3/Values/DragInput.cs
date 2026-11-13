@@ -18,14 +18,18 @@ public readonly struct DragInput
     /// <summary>ドロップされたデータを非同期に読み終えるまで、ドラッグの元に待たせる札を返す。読み終えたら <see cref="DragOperationDeferral.Complete"/> を呼ぶ。</summary>
     public DragOperationDeferral GetDeferral() => new(元の出来事.GetDeferral());
 
-    /// <summary>
-    /// ドラッグされているデータのうち、ファイルのものを、ドロップされた順に返す。フォルダと、ファイルの場所(パス)を持たない項目は含めない。
-    /// </summary>
-    public Task<IReadOnlyList<FileInfo>> GetFilesAsync() => ファイルを読み出す(元の出来事.DataView);
+    /// <summary>ドラッグされているデータの項目を、ドロップされた順に、種類つきで返す。</summary>
+    public Task<IReadOnlyList<DroppedItem>> GetStorageItemsAsync() => Readドロップされた項目(元の出来事.DataView);
 
-    private static async Task<IReadOnlyList<FileInfo>> ファイルを読み出す(Windows.ApplicationModel.DataTransfer.DataPackageView データ)
+    private static async Task<IReadOnlyList<DroppedItem>> Readドロップされた項目(Windows.ApplicationModel.DataTransfer.DataPackageView データ)
     {
         IReadOnlyList<Windows.Storage.IStorageItem> 項目List = await データ.GetStorageItemsAsync();
-        return 項目List.OfType<Windows.Storage.StorageFile>().Where(ファイル => ファイル.Path.Length > 0).Select(ファイル => new FileInfo(ファイル.Path)).ToList();
+        List<DroppedItem> 結果 = [];
+        foreach (Windows.Storage.IStorageItem 項目 in 項目List)
+        {
+            if (項目 is Windows.Storage.StorageFile { Path.Length: > 0 } ファイル) 結果.Add(new DroppedFile(new FileInfo(ファイル.Path)));
+            else 結果.Add(new DroppedOtherItem());
+        }
+        return 結果;
     }
 }

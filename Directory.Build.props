@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>15</LangVersion>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

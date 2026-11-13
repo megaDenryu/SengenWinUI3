@@ -21,6 +21,30 @@ public sealed class Grid : Node, IHasChildren
 
     internal override WinUI.FrameworkElement Element => 本物;
 
+    /// <summary>作るときに渡した行の高さを、同じ数の新しい高さに替える。数が違えば例外を投げる。</summary>
+    public Grid SetRowDefinitions(GridLength[] rowDefinitions)
+    {
+        ThrowIfDestroyed();
+        ThrowIfCountDiffers(rowDefinitions.Length, 本物.RowDefinitions.Count, nameof(rowDefinitions));
+        for (int 番号 = 0; 番号 < rowDefinitions.Length; 番号++)
+        {
+            本物.RowDefinitions[番号].Height = rowDefinitions[番号].ToWinUI();
+        }
+        return this;
+    }
+
+    /// <summary>作るときに渡した列の幅を、同じ数の新しい幅に替える。数が違えば例外を投げる。</summary>
+    public Grid SetColumnDefinitions(GridLength[] columnDefinitions)
+    {
+        ThrowIfDestroyed();
+        ThrowIfCountDiffers(columnDefinitions.Length, 本物.ColumnDefinitions.Count, nameof(columnDefinitions));
+        for (int 番号 = 0; 番号 < columnDefinitions.Length; 番号++)
+        {
+            本物.ColumnDefinitions[番号].Width = columnDefinitions[番号].ToWinUI();
+        }
+        return this;
+    }
+
     int IHasChildren.ChildCount => 本物.Children.Count;
 
     void IHasChildren.InsertChildElement(int index, Node child) => 本物.Children.Insert(index, child.Element);
@@ -30,4 +54,12 @@ public sealed class Grid : Node, IHasChildren
     void IHasChildren.ClearChildElements() => 本物.Children.Clear();
 
     internal override void ApplyStyle(Style style) => GridStyle.All.Apply(style, 本物, this);
+
+    private static void ThrowIfCountDiffers(int 渡した数, int 今の数, string 引数の名前)
+    {
+        if (渡した数 != 今の数)
+        {
+            throw new ArgumentException($"作るときの数({今の数})と違う数({渡した数})は渡せない", 引数の名前);
+        }
+    }
 }

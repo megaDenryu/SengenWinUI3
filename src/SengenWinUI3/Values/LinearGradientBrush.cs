@@ -3,7 +3,7 @@ using WinUI = Microsoft.UI.Xaml;
 namespace SengenWinUI3;
 
 /// <summary>始点から終点へ向かう直線に沿って、区切りの色を混ぜて塗る塗り方。始点と終点は塗る図形の外接する長方形の中の位置で渡す。</summary>
-public sealed record LinearGradientBrush(RelativePoint StartPoint, RelativePoint EndPoint, IReadOnlyList<GradientStop> GradientStops)
+public sealed record LinearGradientBrush(RelativePoint StartPoint, RelativePoint EndPoint, GradientStop[] GradientStops)
 {
     internal WinUI.Media.LinearGradientBrush ToWinUI()
     {

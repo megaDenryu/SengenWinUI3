@@ -1,9 +1,10 @@
+using System.Runtime.InteropServices.WindowsRuntime;
 using WinUI = Microsoft.UI.Xaml;
 
 namespace SengenWinUI3;
 
-/// <summary>画像を見せる部品。出どころはファイルのパスか ms-appx の Uri で渡す。作る関数は <see cref="UI.Image(Uri, Style?)"/> ほか。</summary>
-public sealed partial class Image : Node
+/// <summary>画像を見せる部品。出どころはファイルのパスか ms-appx の Uri、または画素(<see cref="BgraPixels"/>)で渡す。作る関数は <see cref="UI.Image(Uri, Style?)"/> ほか。</summary>
+public sealed class Image : Node
 {
     private static readonly StyleTarget<WinUI.Controls.Image> 当て方 = new(FrameworkElementStyle.Layout);
 
@@ -12,6 +13,12 @@ public sealed partial class Image : Node
     private readonly ElementValue<Image, Uri> 出どころ;
 
     internal Image(Uri source, ImageDecodeSize decodeSize) : this(decodeSize) => 出どころ.Set(source);
+
+    internal Image() : this(new ImageOriginalSize())
+    {
+    }
+
+    internal Image(BgraPixels pixels) : this() => Set画素(pixels);
 
     private Image(ImageDecodeSize decodeSize)
     {
@@ -26,6 +33,14 @@ public sealed partial class Image : Node
     {
         ThrowIfDestroyed();
         出どころ.Set(source);
+        return this;
+    }
+
+    /// <summary>画像を画素から作って見せる。前の画像は置き換える。</summary>
+    public Image SetSource(BgraPixels pixels)
+    {
+        ThrowIfDestroyed();
+        Set画素(pixels);
         return this;
     }
 
@@ -45,4 +60,23 @@ public sealed partial class Image : Node
             UriSource = 見せる出どころ,
         },
     };
+
+    private void Set画素(BgraPixels pixels)
+    {
+        if (pixels.Width <= 0 || pixels.Height <= 0)
+        {
+            throw new ArgumentException($"画素の幅 {pixels.Width} と高さ {pixels.Height} は1以上でなければならない", nameof(pixels));
+        }
+        if (pixels.PremultipliedBytes.Length != checked(pixels.Width * pixels.Height * 4))
+        {
+            throw new ArgumentException($"画素のバイト列の長さ {pixels.PremultipliedBytes.Length} が、幅 {pixels.Width} × 高さ {pixels.Height} × 4 と合わない", nameof(pixels));
+        }
+        WinUI.Media.Imaging.WriteableBitmap 絵 = new(pixels.Width, pixels.Height);
+        using (Stream 書き込み先 = 絵.PixelBuffer.AsStream())
+        {
+            書き込み先.Write(pixels.PremultipliedBytes.Span);
+        }
+        絵.Invalidate();
+        本物.Source = 絵;
+    }
 }

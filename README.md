@@ -60,7 +60,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `StackPanel` | `StackPanel(style)`・`Children(...)`・`AddChild`・`InsertChild`・`DestroyChildren` |
 | `TextBlock` | `TextBlock(text, style)`・`SetText` |
 | `Button` | `Button(text, style)` または `Button(content, style)`・`OnClick`・`SetContent`・`SetColors(ButtonColors)` |
-| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource`。画素から作る元として `Image(BgraPixels, style)`・`SetSource(BgraPixels)`(`BgraPixels` は幅・高さと、アルファを掛けた BGRA のバイト列)、元をまだ持たない `Image(style)` と `SetSourceAsync(SoftwareBitmap)` もある |
+| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource`。画素から作る元として `Image(BgraPixels, style)`・`SetSource(BgraPixels)`(`BgraPixels` は幅・高さと、アルファを掛けた BGRA のバイト列)、元をまだ持たない `Image(style)` もある |
 | `ScrollViewer` | `ScrollViewer(content, style)`・`SetContent`・`ScrollToEnd`・`StickToEnd` |
 | `VirtualList<TItem, TRow>` | `VirtualList<TItem, TRow>(createRow, style)`・`SetItems`・`ReplaceItem` など |
 | `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren`・`SetRowDefinitions`・`SetColumnDefinitions`(作るときと同じ数の `GridLength[]` で行の高さと列の幅を実行中に替える。数が違えば例外) |

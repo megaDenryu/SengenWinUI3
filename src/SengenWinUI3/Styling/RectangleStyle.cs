@@ -11,8 +11,9 @@ internal static class RectangleStyle
         {
             if (見た目.CornerRadius is { } 丸み)
             {
-                本物.RadiusX = 丸み.Value;
-                本物.RadiusY = 丸み.Value;
+                Px 半径 = 丸み.ToUniformRadius();
+                本物.RadiusX = 半径.Value;
+                本物.RadiusY = 半径.Value;
             }
         });
 

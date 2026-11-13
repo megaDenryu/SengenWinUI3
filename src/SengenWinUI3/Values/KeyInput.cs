@@ -36,6 +36,13 @@ public readonly struct KeyInput
         set => 元の出来事.Handled = value;
     }
 
+    /// <summary>このキーの出来事を最初に受けたのが <paramref name="node"/> 自身か。<paramref name="node"/> の中の部品が受けた出来事なら false になる。</summary>
+    public bool IsOriginalSource(Node node)
+    {
+        node.ThrowIfDestroyed();
+        return ReferenceEquals(元の出来事.OriginalSource, node.Element);
+    }
+
     private static bool 押されているか(VirtualKey キー) =>
         (InputKeyboardSource.GetKeyStateForCurrentThread(キー) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
 }

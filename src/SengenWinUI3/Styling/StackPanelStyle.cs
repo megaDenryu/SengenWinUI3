@@ -18,7 +18,7 @@ internal static class StackPanelStyle
         {
             if (style.CachedBorderBrush() is { } 枠線の色) 本物.BorderBrush = 枠線の色;
             if (style.BorderThickness is { } 枠線の太さ) 本物.BorderThickness = 枠線の太さ.ToWinUI();
-            if (style.CornerRadius is { } 丸み) 本物.CornerRadius = new WinUI.CornerRadius(丸み.Value);
+            if (style.CornerRadius is { } 丸み) 本物.CornerRadius = 丸み.ToWinUI();
         });
 
     internal static readonly IStyleGroup<WinUI.Controls.StackPanel> Arrangement = new StyleGroup<WinUI.Controls.StackPanel>(

@@ -48,8 +48,8 @@ public sealed class Style
     public Brush? BorderBrush { get; init; }
     /// <summary>枠線の太さ。</summary>
     public Thickness? BorderThickness { get; init; }
-    /// <summary>角の丸みの半径。</summary>
-    public Px? CornerRadius { get; init; }
+    /// <summary>角の丸み。<c>8.Px</c> と書くと四隅が同じ半径になり、<see cref="PerCornerRadius"/> を渡すと四隅で別々の半径になる。</summary>
+    public CornerRadius? CornerRadius { get; init; }
     /// <summary>文字の大きさ。</summary>
     public Px? FontSize { get; init; }
     /// <summary>文字の太さ。</summary>

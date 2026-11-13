@@ -25,7 +25,7 @@ internal static class BorderStyle
         {
             if (見た目.CachedBorderBrush() is { } 枠線の色) 本物.BorderBrush = 枠線の色;
             if (見た目.BorderThickness is { } 枠線の太さ) 本物.BorderThickness = 枠線の太さ.ToWinUI();
-            if (見た目.CornerRadius is { } 丸み) 本物.CornerRadius = new WinUI.CornerRadius(丸み.Value);
+            if (見た目.CornerRadius is { } 丸み) 本物.CornerRadius = 丸み.ToWinUI();
         });
 
     internal static readonly StyleTarget<WinUI.Controls.Border> All = new(FrameworkElementStyle.Layout, Padding, Background, Border);

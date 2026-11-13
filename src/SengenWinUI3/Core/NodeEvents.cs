@@ -55,6 +55,36 @@ internal static class NodeEvents
         static (本物, ハンドラ) => 本物.PointerMoved += ハンドラ,
         static (本物, ハンドラ) => 本物.PointerMoved -= ハンドラ);
 
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.PointerEventHandler, WinUI.Input.PointerRoutedEventArgs> PointerCaptureLost = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.PointerCaptureLost += ハンドラ,
+        static (本物, ハンドラ) => 本物.PointerCaptureLost -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.PointerEventHandler, WinUI.Input.PointerRoutedEventArgs> PointerCanceled = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.PointerCanceled += ハンドラ,
+        static (本物, ハンドラ) => 本物.PointerCanceled -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.PointerEventHandler, WinUI.Input.PointerRoutedEventArgs> PointerWheelChanged = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.PointerWheelChanged += ハンドラ,
+        static (本物, ハンドラ) => 本物.PointerWheelChanged -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.TappedEventHandler, WinUI.Input.TappedRoutedEventArgs> Tapped = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.Tapped += ハンドラ,
+        static (本物, ハンドラ) => 本物.Tapped -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.RightTappedEventHandler, WinUI.Input.RightTappedRoutedEventArgs> RightTapped = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.RightTapped += ハンドラ,
+        static (本物, ハンドラ) => 本物.RightTapped -= ハンドラ);
+
+    internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.Input.KeyEventHandler, WinUI.Input.KeyRoutedEventArgs> KeyUp = new(
+        static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(出来事),
+        static (本物, ハンドラ) => 本物.KeyUp += ハンドラ,
+        static (本物, ハンドラ) => 本物.KeyUp -= ハンドラ);
+
     internal static readonly EventBinding<WinUI.FrameworkElement, WinUI.RoutedEventHandler, EventArgs> GotFocus = new(
         static (本物, 出来事を渡す) => (送信元, 出来事) => 出来事を渡す(EventArgs.Empty),
         static (本物, ハンドラ) => 本物.GotFocus += ハンドラ,

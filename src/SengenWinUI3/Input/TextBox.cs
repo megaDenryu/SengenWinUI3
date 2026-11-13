@@ -47,6 +47,16 @@ public sealed class TextBox : Node, IControlNode
         return this;
     }
 
+    /// <summary>今の文字を返す。<see cref="OnTextChanged"/> は最後の <see cref="SetText"/> の値へ戻した変更を通知しないので、今の文字が要るときはこのプロパティで読む。</summary>
+    public string Text
+    {
+        get
+        {
+            ThrowIfDestroyed();
+            return 本物.Text;
+        }
+    }
+
     /// <summary>今の選択範囲を返す。範囲を選んでいなければ、長さ 0 でカーソルの位置を表す。</summary>
     public TextSelection Selection
     {

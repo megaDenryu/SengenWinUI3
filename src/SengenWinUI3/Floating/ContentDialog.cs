@@ -47,6 +47,14 @@ public sealed class ContentDialog : FloatingNode
         return this;
     }
 
+    /// <summary>Enter を押したときに押されるボタンを決める。決めないと、どのボタンも既定にならない。</summary>
+    public ContentDialog SetDefaultButton(ContentDialogDefaultButton defaultButton)
+    {
+        ThrowIfDestroyed();
+        本物.DefaultButton = defaultButton.ToWinUI();
+        return this;
+    }
+
     /// <summary>中身を入れ替え、前の中身を破棄する。</summary>
     public ContentDialog SetContent(Node content)
     {

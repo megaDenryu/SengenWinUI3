@@ -91,7 +91,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `CalendarDatePicker` | `CalendarDatePicker(date, style)`・`SetDate`・`OnDateChanged` |
 | `ColorPicker` | `ColorPicker(color, style)`・`SetColor`・`OnColorChanged` |
 | `Popup` | `Popup(content, offset, isLightDismissEnabled)`(`offset` は `Point`)または `PopupAbove(content, isLightDismissEnabled)`(基準の上へ左端をそろえて出す)・`Open(anchor)`・`Close`・`SetContent` |
-| `ContentDialog` | `ContentDialog(title, content, buttons)`(`buttons` は `ContentDialogButtons` で、`Primary`・`Secondary`・`Close` を名前付きで渡す)・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent` |
+| `ContentDialog` | `ContentDialog(title, content, buttons)`(`buttons` は `ContentDialogButtons` で、`Primary`・`Secondary`・`Close` を名前付きで渡す)・`ShowAsync(anchor)`・`Hide`・`SetTitle`・`SetContent`・`SetDefaultButton(ContentDialogDefaultButton)`(Enter で押されるボタン。決めないとどれも既定にならない) |
 | `Flyout` | `Flyout(content)` か `MenuFlyout(...)` を `button.Flyout(...)` で付ける |
 | `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
 | `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |

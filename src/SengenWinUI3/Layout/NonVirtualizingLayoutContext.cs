@@ -32,5 +32,5 @@ public sealed class NonVirtualizingLayoutContext
 
     /// <summary>子を <paramref name="bounds"/> の場所に置く。</summary>
     public void Arrange(int index, Rect bounds) =>
-        本物.Children[index].Arrange(new Windows.Foundation.Rect(bounds.X.Value, bounds.Y.Value, bounds.Width.Value, bounds.Height.Value));
+        本物.Children[index].Arrange(bounds.ToWinUI());
 }

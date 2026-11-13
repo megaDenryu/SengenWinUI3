@@ -60,16 +60,18 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `StackPanel` | `StackPanel(style)`・`Children(...)`・`AddChild`・`InsertChild`・`DestroyChildren` |
 | `TextBlock` | `TextBlock(text, style)`・`SetText` |
 | `Button` | `Button(text, style)` または `Button(content, style)`・`OnClick`・`SetContent`・`SetColors(ButtonColors)` |
-| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource` |
+| `Image` | `Image(uri, style)` または `Image(uri, new ImageDecodeWidth(width), style)`・`SetSource`。画素から作る元として `Image(BgraPixels, style)`・`SetSource(BgraPixels)`(`BgraPixels` は幅・高さと、アルファを掛けた BGRA のバイト列)、元をまだ持たない `Image(style)` と `SetSourceAsync(SoftwareBitmap)` もある |
 | `ScrollViewer` | `ScrollViewer(content, style)`・`SetContent`・`ScrollToEnd`・`StickToEnd` |
 | `VirtualList<TItem, TRow>` | `VirtualList<TItem, TRow>(createRow, style)`・`SetItems`・`ReplaceItem` など |
-| `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
+| `Grid` | `Grid(style)`・`Grid(rowDefinitions, columnDefinitions, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren`・`SetRowDefinitions`・`SetColumnDefinitions`(作るときと同じ数の `GridLength[]` で行の高さと列の幅を実行中に替える。数が違えば例外) |
 | `Border` | `Border(content, style)`・`SetContent` |
 | `Canvas` | `Canvas(style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren` |
-| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`OnTextChanged`・`SetColors(TextBoxColors)`・`Selection`(`TextSelection`。カーソルの位置は `Start`)・`SetSelection(selection)`(変更を通知しない)・`IsComposing`(日本語入力の変換中なら true) |
+| `ContentControl` | `ContentControl(content, style)`・`SetContent`。中身を置くだけの Control で、フォーカスを受け、Tab キーで選べる |
+| `LayoutPanel` | `LayoutPanel(layout, style)`・`Children`・`AddChild`・`InsertChild`・`DestroyChildren`。子の測り方と置き方を `NonVirtualizingLayout`(利用する側が派生して `MeasureOverride`・`ArrangeOverride` を書く。子は `NonVirtualizingLayoutContext` の `ChildCount`・`Measure(index, availableSize)`・`DesiredSize(index)`・`Arrange(index, rect)` で測り、置く)に任せる |
+| `TextBox` | `TextBox(text, placeholderText, acceptsReturn, textWrapping, style)`・`SetText`・`Text`(今の文字を読む)・`OnTextChanged`・`SetColors(TextBoxColors)`・`Selection`(`TextSelection`。カーソルの位置は `Start`)・`SetSelection(selection)`(変更を通知しない)・`IsComposing`(日本語入力の変換中なら true) |
 | `PasswordBox` | `PasswordBox(password, placeholderText, style)`・`SetPassword`・`OnPasswordChanged` |
 | `NumberBox` | `NumberBox(value, minimum, maximum, style)`・`SetValue`・`OnValueChanged` |
-| `Slider` | `Slider(value, minimum, maximum, stepFrequency, style)`・`SetValue`・`OnValueChanged`・`SetColors(SliderColors)` |
+| `Slider` | `Slider(value, minimum, maximum, stepFrequency, style)`・`SetValue`・`Value`(今の値を読む)・`OnValueChanged`・`SetSmallChange`・`SetLargeChange`・`IsThumbToolTipEnabled`・`SetColors(SliderColors)` |
 | `CheckBox` | `CheckBox(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged` |
 | `ToggleButton` | `ToggleButton(isChecked, content, style)`・`SetIsChecked`・`OnCheckedChanged`・`SetColors(ToggleButtonColors)` |
 | `ToggleSwitch` | `ToggleSwitch(isOn, header, style)`・`SetIsOn`・`OnToggled` |
@@ -81,7 +83,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `SymbolIcon` | `SymbolIcon(symbol, style)`・`SetSymbol` |
 | `ProgressBar` | `ProgressBar(progress, style)`・`SetProgress` |
 | `ProgressRing` | `ProgressRing(isActive, progress, style)`・`SetProgress`・`SetIsActive` |
-| `Rectangle` | `Rectangle(style)`・`SetDropShadow(ColorShadow)`・`ClearDropShadow()`。角の丸みは Style の `CornerRadius` |
+| `Rectangle` | `Rectangle(style)`・`SetDropShadow(ColorShadow)`・`ClearDropShadow()`・`BeginFillColorAnimation(duration, keyFrames)`(`ColorKeyFrame(Color, KeyTime)` の列を直線でつないだ塗りの色を止めるまで繰り返す。この長方形専用のブラシを持つので `Style` の共有ブラシの色は変わらない)・`StopFillColorAnimation()`。角の丸みは Style の `CornerRadius`。ただし四隅が別の値の `PerCornerRadius` は例外になる |
 | `Ellipse` | `Ellipse(style)`。固有の操作は無い |
 | `Path` | `Path(PathData, style)`・`SetData`。`PathData` は SVG の道の文字列 |
 | `Viewbox` | `Viewbox(content, style)`・`SetContent`。中身を縦横比を保って自分の大きさに合わせる |
@@ -97,9 +99,13 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 
 作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
 
-チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`RotationTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)`・`Rotation(angle)`(`angle` は `Degrees`。`90.Degrees` と書く)・`CenterPoint(center)`(`center` は `Point`)で付ける。不透明度を繰り返し上下させるのは `PulseOpacity(lowest, period)`(`lowest` は `Ratio`)と `StopPulse()` である。キーは `OnKeyDown`(子が処理した後)と `OnPreviewKeyDown`(子が処理する前。`Handled` を立てると子の既定の処理が起きない)、フォーカスは `OnGotFocus`・`OnLostFocus`、ポインターは `OnPointerMoved`・`CapturePointer(input)`・`ReleasePointerCapture(input)`・`ReleasePointerCaptures()` で扱う。
+チェーンは型を保つ拡張メソッドで付ける。配置は、Grid の中の位置を `GridRow`・`GridColumn`・`GridRowSpan`・`GridColumnSpan` で、Canvas の中の位置を `CanvasLeft`・`CanvasTop` で書く。どの部品にも、右クリックで開くメニューを `ContextFlyout(menu)` で、文字の説明を `ToolTip(text)` で付けられる。押せる部品(`Button`・`HyperlinkButton`)は、`button.Flyout(flyout)` か `button.Flyout(menu)` で、押したら開く浮かぶ部品を付ける。影と動きは、`Shadow(depth)`・`NoShadow()`・`OpacityTransition(duration)`・`TranslationTransition(duration)`・`ScaleTransition(duration)`・`RotationTransition(duration)`・`Translation(offset)`(`offset` は `Point`)・`Scale(x, y)`・`Rotation(angle)`(`angle` は `Degrees`。`90.Degrees` と書く)・`CenterPoint(center)`(`center` は `Point`)で付ける。不透明度を繰り返し上下させるのは `PulseOpacity(lowest, period)`(`lowest` は `Ratio`)と `StopPulse()` である。キーは `OnKeyDown`(子が処理した後)と `OnPreviewKeyDown`(子が処理する前。`Handled` を立てると子の既定の処理が起きない)、フォーカスは `OnGotFocus`・`OnLostFocus`、ポインターは `OnPointerMoved`・`OnPointerPressed`・`OnPointerReleased`・`OnPointerCaptureLost`・`OnPointerCanceled`・`OnPointerWheelChanged`・`CapturePointer(input)`・`ReleasePointerCapture(input)`・`ReleasePointerCaptures()` で扱い、タップは `OnTapped`・`OnRightTapped`、キーの離しは `OnKeyUp` で受ける。
 
-状態ごとの色(ふだん・重ねた・押した・押せない)を持つ `Button`・`ToggleButton`・`TextBox`・`Slider` は、`SetColors` で WinUI の lightweight styling の資源を書く。資源はテンプレートが読み込みのときに1回引くので、`SetColors` は木へ入れる前に呼び、読み込まれた後に呼ぶと例外になる。
+`OnKeyUp`・`OnPointerPressed`・`OnPointerReleased`・`OnPointerCaptureLost`・`OnPointerCanceled` は、`handledEventsToo: true` を渡すと、子の部品が処理済みにした出来事も受ける。同じ部品の同じ名前の出来事への登録は、この引数の値が違っても1回だけである。`PointerInput` は、出来事を受けた部品の左上からの `X`・`Y` と、ボタンの変化の種類 `UpdateKind`(`PointerUpdateKind`)・ホイールの量 `MouseWheelDelta`・別の部品の左上からの位置 `GetPosition(node)` を持つ。`KeyInput` の `IsOriginalSource(node)` は、キーの出来事を最初に受けたのが `node` 自身かを返す。
+
+そのほかの共通のチェーンは次のとおりである。`Cursor(InputSystemCursorShape)` はポインターが上にあるときの OS のカーソルを決める。`Clip(rect)` は表示を `Rect` で切り抜く。`IsHitTestVisible(bool)` は当たり判定を受けるかを決め、`IsTabStop(bool)`(Control の部品)は Tab キーで止まるかを決める。`UpdateLayout()` は配置の計算をその場で終わらせる。`IsTextBoxFocused()` は、部品の載っている画面でフォーカスが TextBox にあるかを返す。`OnKeyboardAcceleratorInvoked(key, modifiers, handler)` はキーの組み合わせ(`VirtualKeyModifiers` は `None`・`Control`・`Menu`・`Shift`・`Windows` の組み合わせ)を受け、`KeyboardAcceleratorInput.Handled` を立てると他へ伝えない。ドラッグ&ドロップは、`AllowDrop(bool)` と `OnDragOver`・`OnDrop` で受ける。`DragInput` は `ContainsStorageItems`・`SetAcceptedOperation(DataPackageOperation)`・`GetDeferral()`(読み終えたら `DragOperationDeferral.Complete()`)・`GetFilesAsync()`(ドロップされたファイルを `FileInfo` の並びで返す)を持つ。
+
+状態ごとの色(ふだん・重ねた・押した・押せない)を持つ `Button`・`ToggleButton`・`TextBox`・`Slider` は、`SetColors` で WinUI の lightweight styling の資源を書く。`TextBoxColors` の状態ごとの色は、背景・枠線に加えて文字の `Foreground` と、何も入力していないときの文字の `PlaceholderForeground` を持つ。資源はテンプレートが読み込みのときに1回引くので、`SetColors` は木へ入れる前に呼び、読み込まれた後に呼ぶと例外になる。
 
 部品の範囲と契約は [設計文書](docs/設計.md) にある。
 
@@ -110,8 +116,9 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | 部品 | 共通の幅・高さ・最小最大・Margin・寄せ方・Opacity に追加できる項目 |
 |---|---|
 | `StackPanel` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・Orientation・Spacing |
+| `LayoutPanel` | Background |
 | `TextBlock` | Padding・Foreground・FontSize・FontWeight・FontFamily・TextWrapping・IsTextSelectionEnabled・TextAlignment・TextTrimming・LineHeight |
-| `Button`・`ScrollViewer` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
+| `Button`・`ScrollViewer`・`ContentControl` | Padding・Background・Foreground・BorderBrush・BorderThickness・CornerRadius・FontSize・FontWeight・FontFamily・HorizontalContentAlignment・VerticalContentAlignment |
 | `Grid` | Padding・Background・BorderBrush・BorderThickness・CornerRadius・RowSpacing・ColumnSpacing |
 | `Border` | Padding・Background・BorderBrush・BorderThickness・CornerRadius |
 | `Canvas` | Background |
@@ -123,7 +130,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 
 浮かぶ部品の `Popup`・`ContentDialog`・`MenuFlyout` は Style を受けない。`Popup` の中身の部品には Style を当てられる。
 
-長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。横と縦の2つの長さの組は `Point` の値で渡す(`new Point(0.Px, 40.Px)`)。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
+長さは `12.Px`、四辺の余白は `new Thickness(8.Px)` で渡す。`Style` の `CornerRadius` は四隅が同じなら `8.Px`、四隅が別なら `new PerCornerRadius(TopLeft, TopRight, BottomRight, BottomLeft)`(左上・右上・右下・左下の順)で渡す。切り抜きの範囲と `NonVirtualizingLayoutContext.Arrange` で子を置く範囲は `Rect(X, Y, Width, Height)` で渡す。色の項目の `Brush` は `Color` のほか、`LinearGradientBrush(StartPoint, EndPoint, GradientStops)` を受ける。`StartPoint` と `EndPoint` は塗る図形の外接する長方形の中の割合の位置 `RelativePoint(Ratio X, Ratio Y)`(左上が (0, 0)、右下が (1, 1))、`GradientStop` は `Color` と `Ratio` の `Offset` の組である。横と縦の2つの長さの組は `Point` の値で渡す(`new Point(0.Px, 40.Px)`)。Style はブラシとフォントを共有するため、同じ Style は1つの UI スレッドだけで使う。
 
 ## 寿命と出来事
 

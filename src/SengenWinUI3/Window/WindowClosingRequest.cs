@@ -1,6 +1,6 @@
 namespace SengenWinUI3;
 
-/// <summary>ウインドウが閉じようとしていることの知らせ。<see cref="SecondaryWindow.OnClosing"/> の処理が受け、<see cref="Cancel"/> で閉じるのを取り消せる。</summary>
+/// <summary>ウインドウが閉じようとしていることの知らせ。<see cref="SecondaryWindow"/> の閉じようとしたときの処理が受け、<see cref="Cancel"/> で閉じるのを取り消せる。</summary>
 public sealed class WindowClosingRequest
 {
     private readonly Action 取り消す;

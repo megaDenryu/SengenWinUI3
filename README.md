@@ -96,7 +96,7 @@ WinUI の型を公開の署名へ出すのは、移行の境目となる NodeHos
 | `MenuFlyout` | `MenuFlyout(params MenuFlyoutEntry[] items)`・`Hide`。`ContextFlyout(menu)` で右クリックの形にも付ける |
 | `Component` | sealed の派生を作り、`Build()` で根を返す。作る関数を使わず `new` で作る |
 | `NodeHost` | `new NodeHost(content)`・`Element`・`SetContent`・`Destroy`。生の木へ置く入れ物 |
-| `SecondaryWindow` | `new SecondaryWindow(title, initialSize, content)`(`initialSize` は `ViewSize`)・`Show`・`Hide`・`SetTitle`・`OnClosing(handler)`(`handler` が受ける `WindowClosingRequest` の `Cancel()` で閉じるのを取り消せる)・`IsDestroyed`・`Destroy`。主ウインドウとは別の OS のウインドウ。作った後は `Show` で出し、閉じると根を破棄する |
+| `SecondaryWindow` | `new SecondaryWindow(title, initialSize, content, onClosing)`(`initialSize` は `ViewSize`。`onClosing` が受ける `WindowClosingRequest` の `Cancel()` で閉じるのを取り消せる)・`Show`・`Hide`・`SetTitle`・`IsDestroyed`・`Destroy`。主ウインドウとは別の OS のウインドウ。作った後は `Show` で出し、閉じると根を破棄する |
 
 作る関数の Style 引数は省略でき、後から `.Style(style)` でも当てられる。作る時に決まる条件は、`Children` の引数の `condition ? node : null` で書く。
 

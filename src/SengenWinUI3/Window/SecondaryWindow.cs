@@ -7,18 +7,18 @@ namespace SengenWinUI3;
 public sealed class SecondaryWindow
 {
     private readonly WinUI.Window 本物 = new();
-    private Action<WindowClosingRequest> 閉じようとした時の処理 = static _ => { };
-    private bool 閉じようとした時の処理を決めたか;
+    private readonly Action<WindowClosingRequest> 閉じようとしたときに呼ぶ処理;
     private bool 破棄したか;
 
-    /// <summary>ウインドウを作る。まだ表示しない。表示は <see cref="Show"/> で行う。親を持つ部品は <paramref name="content"/> に渡せない。</summary>
-    public SecondaryWindow(string title, ViewSize initialSize, Node content)
+    /// <summary>ウインドウを作る。まだ表示しない。表示は <see cref="Show"/> で行う。親を持つ部品は <paramref name="content"/> に渡せない。<paramref name="onClosing"/> は、利用者や OS がウインドウを閉じようとしたときの処理で、<see cref="WindowClosingRequest.Cancel"/> を呼ばなければ閉じる。<see cref="Destroy"/> による閉じ方では呼ばれない。</summary>
+    public SecondaryWindow(string title, ViewSize initialSize, Node content, Action<WindowClosingRequest> onClosing)
     {
+        閉じようとしたときに呼ぶ処理 = onClosing;
         本物.Title = title;
         本物.AppWindow.Resize(new SizeInt32(Convert.ToInt32(initialSize.Width.Value), Convert.ToInt32(initialSize.Height.Value)));
         本物.SetContent(content);
-        本物.AppWindow.Closing += 閉じようとした;
-        本物.Closed += 閉じた;
+        本物.AppWindow.Closing += On閉じようとした;
+        本物.Closed += On閉じた;
     }
 
     /// <summary>閉じたか、<see cref="Destroy"/> を呼んだか。</summary>
@@ -49,16 +49,6 @@ public sealed class SecondaryWindow
         return this;
     }
 
-    /// <summary>利用者や OS がウインドウを閉じようとしたときの処理を決める。処理が <see cref="WindowClosingRequest.Cancel"/> を呼ばなければ閉じる。<see cref="Destroy"/> による閉じ方では呼ばれない。1回だけ決められる。</summary>
-    public SecondaryWindow OnClosing(Action<WindowClosingRequest> handler)
-    {
-        破棄済みなら例外を投げる();
-        if (閉じようとした時の処理を決めたか) throw new InvalidOperationException("SecondaryWindow の OnClosing は1回だけ決められる");
-        閉じようとした時の処理 = handler;
-        閉じようとした時の処理を決めたか = true;
-        return this;
-    }
-
     /// <summary>ウインドウを閉じて根を破棄する。2回目は何もしない。</summary>
     public void Destroy()
     {
@@ -67,13 +57,13 @@ public sealed class SecondaryWindow
         本物.Close();
     }
 
-    private void 閉じようとした(Microsoft.UI.Windowing.AppWindow 閉じるウインドウ, Microsoft.UI.Windowing.AppWindowClosingEventArgs 出来事)
+    private void On閉じようとした(Microsoft.UI.Windowing.AppWindow 閉じるウインドウ, Microsoft.UI.Windowing.AppWindowClosingEventArgs 出来事)
     {
         if (破棄したか) return;
-        閉じようとした時の処理(new WindowClosingRequest(() => 出来事.Cancel = true));
+        閉じようとしたときに呼ぶ処理(new WindowClosingRequest(() => 出来事.Cancel = true));
     }
 
-    private void 閉じた(object sender, WinUI.WindowEventArgs 出来事) => 破棄したか = true;
+    private void On閉じた(object sender, WinUI.WindowEventArgs 出来事) => 破棄したか = true;
 
     private void 破棄済みなら例外を投げる()
     {
